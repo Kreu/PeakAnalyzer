@@ -136,6 +136,24 @@ namespace bioscripts
         //    }
         //}
 
+        std::string extractAttribute(const Record& record, const std::string& attribute_name)
+        {
+            auto attribute_name_start_pos = record.attributes.find(attribute_name);
+            if (attribute_name_start_pos == std::string::npos) {
+                return "";
+            }
+
+            //The + 1 is for the '=' character that is always preceded by the attribute value
+            //e.g. it is in the format of "attribute_name=attribute_value;"
+            auto attribute_value_start_pos = attribute_name_start_pos + attribute_name.length() + 1;
+
+            constexpr auto delimiter = ';';
+            auto next_delimiter_pos = record.attributes.find(delimiter, attribute_value_start_pos);
+            auto substring_length = next_delimiter_pos - attribute_value_start_pos;
+            return record.attributes.substr(attribute_value_start_pos, substring_length);
+        }
+
+
         Records::pointer Records::findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type)
         {
             std::int64_t record_distance_to_genomic_position = std::numeric_limits<std::int64_t>::max();
@@ -187,7 +205,8 @@ namespace bioscripts
 
         Records::reference Records::findLastRecord(Identifier sequence_id, std::string feature_id, Record::Type type)
         {
-            
+            bioscripts::gff::Record asd{};
+            return asd;
         }
 
     }
