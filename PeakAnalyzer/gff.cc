@@ -50,6 +50,11 @@ namespace {
             return bioscripts::gff::Record::Type::Unknown;
         }
     }
+
+    std::size_t distanceToRecord(const std::size_t genomic_position, const bioscripts::gff::Record& record)
+    {
+
+    }
 }
 
 namespace bioscripts
@@ -173,6 +178,7 @@ namespace bioscripts
             return closest_record;
         }
 
+
         std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id)
         {
             if (!records.contains(sequence_id)) {
@@ -189,6 +195,7 @@ namespace bioscripts
             return results;
         }
 
+
         std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id, const Record::Type type)
         {
             auto results = findUnderlyingRecords(genomic_position, sequence_id);
@@ -202,6 +209,7 @@ namespace bioscripts
             
             return results;
         }
+
 
         Records::reference Records::findLastRecord(Identifier sequence_id, std::string feature_id, Record::Type type)
         {

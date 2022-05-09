@@ -24,25 +24,20 @@ int main(int argc, char* argv[])
 		auto overlapping_records = gff_records.findUnderlyingRecords(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 		bioscripts::gff::Records::pointer closest_record = nullptr;
 
-		auto hasWrongIdentifier = [&peak](const auto& elem)
+		auto recordIdentifierDoesNotMatchPeakIdentifier = [&peak](const auto& elem)
 		{
-			return peak.feature.ensembl_id != bioscripts::gff::extractAttribute(elem.attributes, "Name");
+			return peak.feature.ensembl_id.to_string() != bioscripts::gff::extractAttribute(elem, "Name");
 		};
 
 		if (!overlapping_records.empty()) {
-			std::erase_if(overlapping_records, hasWrongIdentifier);
+			std::erase_if(overlapping_records, recordIdentifierDoesNotMatchPeakIdentifier);
 		}
 
 
 
-		if (overlapping_records.empty()) {
+		else if (overlapping_records.empty()) {
 			closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 		}
-
-
-
-
-
 
 		//Recreate the full CDS from the peak.
 		auto last_peak_cds = gff_records.findLastRecord(peak.feature.ensembl_id, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
