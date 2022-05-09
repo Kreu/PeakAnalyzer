@@ -8,17 +8,10 @@
 #include <unordered_map>
 #include <vector>
 
+#include "peak.h"
+
 namespace bioscripts
 {
-    enum class Strand : uint8_t
-    {
-        Sense,
-        Antisense,
-        Unknown
-    };
-
-    Strand deduceStrand(const std::string& str);
-
     namespace gff
     {
         struct Record
@@ -43,8 +36,6 @@ namespace bioscripts
                 Unknown
             };
 
-
-
             Type type;
             Strand strand;
             std::size_t start_pos;
@@ -66,11 +57,16 @@ namespace bioscripts
 
             using iterator = std::vector<Record>::iterator;
             using const_iterator = std::vector<Record>::const_iterator;
+            using reference = Record&;
+            using const_reference = const Record&;
 
-            //iterator find(const std::string& sequence_id, );
+            //iterator find(const std::string& sequence_id, );3
+               
+
+            reference findClosestRecord(const bioscripts::peak::Peak& peak);
         private:
             std::unordered_map<std::string, std::vector<Record>> records;
-        };
+        }; 
     }
 }
 

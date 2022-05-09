@@ -10,7 +10,8 @@ int main()
 	auto peaks = bioscripts::peak::Peaks{ peaks_file };
 	
 	for (const auto& peak : peaks) {
-
+		auto midpoint = bioscripts::peak::midpoint(peak);
+		
 	}
 
 }

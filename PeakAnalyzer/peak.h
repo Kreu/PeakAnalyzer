@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <string>
 
-#include "gff.h"
+#include "strand.h"
 
 namespace bioscripts
 {

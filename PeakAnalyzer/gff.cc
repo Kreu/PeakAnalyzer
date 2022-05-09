@@ -53,18 +53,6 @@ namespace {
 
 namespace bioscripts
 {
-    Strand deduceStrand(const std::string& str) {
-        if (str == "+") {
-            return bioscripts::Strand::Sense;
-        }
-        else if (str == "-") {
-            return bioscripts::Strand::Antisense;
-        }
-        else {
-            return bioscripts::Strand::Unknown;
-        }
-    }
-
     namespace gff
     {
         Records::Records(const std::filesystem::path& gff_records)
@@ -138,6 +126,51 @@ namespace bioscripts
             for (auto& [chromosome_id, entries] : records) {
                 std::sort(std::begin(entries), std::end(entries), Comparator);
             }
+        }
+
+        Records::reference Records::findClosestRecord(const bioscripts::peak::Peak& peak)
+        {
+            auto peak_sequence_identifier = peak.sequence_id;
+
+            if (!records.contains(peak_sequence_identifier)) {
+                return;
+            }
+
+            auto& peak_chromosome_records = records.at(peak_sequence_identifier);
+
+
+
+
+
+
+            //auto isEndPosLessThanPeakPos = [](const auto& e1, const std::size_t& peak_pos)
+            //{
+            //    return (e1.end_pos < peak_pos);
+            //};
+
+            //auto isStartPosLessThanPeakPos = [](const auto& e1, const std::size_t& peak_pos)
+            //{
+            //    return (e1.start_pos < peak_pos);
+            //};
+
+            //const auto peak_midpoint = bioscripts::peak::midpoint(peak);
+            //auto first_overlapping_gff_record = std::lower_bound(std::begin(peak_chromosome_records), std::end(peak_chromosome_records), peak_midpoint, isEndPosLessThanPeakPos);
+            //auto first_non_overlapping_gff_record = std::upper_bound(std::begin(peak_chromosome_records), std::end(peak_chromosome_records), peak_midpoint, isStartPosLessThanPeakPos);
+
+            //if (first_overlapping_gff_record == std::end(peak_chromosome_records)) {
+            //    return;
+            //}
+
+            //if (first_non_overlapping_gff_record == std::end(peak_chromosome_records)) {
+            //    return;
+            //}
+
+
+            
+            return peak_chromosome_records[0];
+
+
+
         }
     }
 }
