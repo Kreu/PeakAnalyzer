@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 
 		auto hasWrongIdentifier = [&peak](const auto& elem)
 		{
-			return peak.feature.ensembl_id != bioscripts::gff::extractAttribute(elem.attributes, "Name");
+			return peak.feature.ensembl_id.to_string() != bioscripts::gff::extractAttribute(elem, "Name");
 		};
 
 		if (!overlapping_records.empty()) {
