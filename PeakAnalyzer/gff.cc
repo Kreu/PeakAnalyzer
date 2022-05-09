@@ -139,5 +139,67 @@ namespace bioscripts
                 std::sort(std::begin(entries), std::end(entries), Comparator);
             }
         }
+
+        //Record& Records::findClosestRecord(std::size_t genomic_position, std::string sequence_id)
+        //{
+        //    for (const auto& record : records[sequence_id]) {
+
+        //    }
+        //}
+
+        Records::pointer Records::findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type)
+        {
+            //WARNING: Parentheses around max? Macro expansion
+            std::size_t record_distance_to_genomic_position = std::numeric_limits<std::size_t>::max();
+            Records::pointer closest_record = nullptr;
+            for (const auto& record : records[sequence_id]) {
+                if (record.type != type) {
+                    continue;
+                }
+
+                if (std::abs(record_distance_to_genomic_position - record.start_pos) < record_distance_to_genomic_position) {
+                    record_distance_to_genomic_position = std::abs(record_distance_to_genomic_position - record.start_pos);
+                    closest_record = &record;
+                }
+            }
+            return closest_record;
+        }
+
+        std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id)
+        {
+            if (!records.contains(sequence_id)) {
+                return;
+            }
+
+            std::vector<Record> results;
+            for (const auto& record : records[sequence_id]) {
+                if (record.start_pos <= genomic_position && record.end_pos >= genomic_position) {
+                    results.push_back(record);
+                }
+            }
+
+            return records;
+        }
+
+        std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id, const Record::Type type)
+        {
+            auto results = findUnderlyingRecords(genomic_position, sequence_id);
+            auto IsWrongFeatureType = [&type](const auto& elem) {
+                return (elem.type != type);
+            };
+
+            for (const auto& record : results) {
+                std::erase_if(results, IsWrongFeatureType);
+
+            }
+
+            return results;
+        }
+
+        Records::reference Records::findLastRecord(std::string sequence_id, std::string feature_id, Record::Type type)
+        {
+
+        }
+
     }
 }
