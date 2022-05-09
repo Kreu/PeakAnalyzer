@@ -1,4 +1,5 @@
 #include <fstream>
+#include <cmath>
 
 #include "helpers.h"
 #include "gff.h"
@@ -137,16 +138,17 @@ namespace bioscripts
 
         Records::pointer Records::findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type)
         {
-            //WARNING: Parentheses around max? Macro expansion
-            std::size_t record_distance_to_genomic_position = std::numeric_limits<std::size_t>::max();
+            std::int64_t record_distance_to_genomic_position = std::numeric_limits<std::int64_t>::max();
             Records::pointer closest_record = nullptr;
-            for (const auto& record : records[sequence_id]) {
+            for (auto& record : records[sequence_id]) {
                 if (record.type != type) {
                     continue;
                 }
 
-                if (std::abs(record_distance_to_genomic_position - record.start_pos) < record_distance_to_genomic_position) {
-                    record_distance_to_genomic_position = std::abs(record_distance_to_genomic_position - record.start_pos);
+                //TODO: The following calculation is not safe but very unlikely to ever cause problems considering the small size of genomes
+                //and consequently the low values of record start and end positions.
+                if ((record_distance_to_genomic_position - record.start_pos) < record_distance_to_genomic_position) {
+                    record_distance_to_genomic_position = record_distance_to_genomic_position - record.start_pos;
                     closest_record = &record;
                 }
             }
@@ -156,7 +158,7 @@ namespace bioscripts
         std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id)
         {
             if (!records.contains(sequence_id)) {
-                return;
+                return {};
             }
 
             std::vector<Record> results;
@@ -166,7 +168,7 @@ namespace bioscripts
                 }
             }
 
-            return records;
+            return results;
         }
 
         std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id, const Record::Type type)
@@ -178,15 +180,14 @@ namespace bioscripts
 
             for (const auto& record : results) {
                 std::erase_if(results, IsWrongFeatureType);
-
             }
-
+            
             return results;
         }
 
-        Records::reference Records::findLastRecord(std::string sequence_id, std::string feature_id, Record::Type type)
+        Records::reference Records::findLastRecord(Identifier sequence_id, std::string feature_id, Record::Type type)
         {
-
+            
         }
 
     }

@@ -43,12 +43,29 @@ namespace bioscripts
             std::optional<uint8_t> phase;
             std::optional<double> score;
 
-            std::string sequence_id;
+            std::string sequence_id; 
             std::string source;
             std::string attributes;
 
             auto operator<=>(const Record& rhs) const = default;
         };
+
+        std::string extractAttribute(const Record& record, const std::string& attribute_name)
+        {
+            auto attribute_name_start_pos = record.attributes.find(attribute_name);
+            if (attribute_name_start_pos == std::string::npos) {
+                return "";
+            }
+
+            //The + 1 is for the '=' character that is always preceded by the attribute value
+            //e.g. it is in the format of "attribute_name=attribute_value;"
+            auto attribute_value_start_pos = attribute_name_start_pos + attribute_name.length() + 1;
+
+            constexpr auto delimiter = ';';
+            auto next_delimiter_pos = record.attributes.find(delimiter, attribute_value_start_pos);
+            auto substring_length = next_delimiter_pos - attribute_value_start_pos;
+            return record.attributes.substr(attribute_value_start_pos, substring_length);
+        }
 
         class Records
         {
@@ -65,7 +82,7 @@ namespace bioscripts
             //reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
             pointer findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type);
 
-            reference findLastRecord(std::string sequence_id, std::string feature_id, Record::Type type);
+            reference findLastRecord(Identifier sequence_id, std::string feature_id, Record::Type type);
 
 
             std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id);
