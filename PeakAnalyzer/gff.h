@@ -58,16 +58,29 @@ namespace bioscripts
             using iterator = std::vector<Record>::iterator;
             using const_iterator = std::vector<Record>::const_iterator;
             using reference = Record&;
-            using const_reference = const Record&;
+            using const_reference = const Record;
+            using pointer = Record*;
+            using const_pointer = const Record*;
 
-            //iterator find(const std::string& sequence_id, );3
-               
+            //reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
+            pointer findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type);
 
-            reference findClosestRecord(const bioscripts::peak::Peak& peak);
+            reference findLastRecord(std::string sequence_id, std::string feature_id, Record::Type type);
+
+
+            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id);
+            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id, const Record::Type type);
+
+
+            //iterator find(const std::string& sequence_id, );
         private:
             std::unordered_map<std::string, std::vector<Record>> records;
-        }; 
+        };
+
+ 
     }
+
+    
 }
 
 #endif // !BIOSCRIPTS_GFF_H
