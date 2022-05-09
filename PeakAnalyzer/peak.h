@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <string>
 
+#include "identifier.h"
 #include "strand.h"
 
 namespace bioscripts
@@ -16,8 +17,8 @@ namespace bioscripts
 			std::size_t start_pos;
 			std::size_t end_pos;
 			Strand strand;
-			std::string identifier;
-			std::string ensembl_id;
+			Identifier identifier; //Denotes the identifier under the peak. Usually it is the gene name, e.g. AT1G12345
+			Identifier ensembl_id; //This is the identifier associate with the peak after R analysis. More detailed "identifier", e.g. AT1G12345.2.exon4
 		};
 
 		struct Peak
@@ -28,7 +29,7 @@ namespace bioscripts
 			uint16_t score;
 			double pvalue;
 			double qvalue;
-			std::string sequence_id;
+			std::string sequence_id; //Denotes the ID of the sequence the peak is found on. Usually it is the chromosome identifier.
 			Feature feature;
 		};
 
