@@ -1,6 +1,8 @@
 #include <fstream>
 #include <cmath>
 
+#include <iostream>
+
 #include "helpers.h"
 #include "gff.h"
 
@@ -13,8 +15,14 @@ namespace {
         else if (str == "mRNA") {
             return bioscripts::gff::Record::Type::mRNA;
         }
+        else if (str == "gene") {
+            return bioscripts::gff::Record::Type::gene;
+        }
         else if (str == "five_prime_UTR") {
             return bioscripts::gff::Record::Type::five_prime_UTR;
+        }
+        else if (str == "three_prime_UTR") {
+            return bioscripts::gff::Record::Type::three_prime_UTR;
         }
         else if (str == "exon") {
             return bioscripts::gff::Record::Type::exon;
@@ -71,8 +79,12 @@ namespace bioscripts
             std::string line;
             std::getline(f, line); /* Skips the header in database file */
             while (std::getline(f, line)) {
-                const auto tokens = helper::tokenise(line, '\t');
+                static constexpr auto comment_token = '#';
+                if (line.starts_with(comment_token)) {
+                    continue;
+                }
 
+                const auto tokens = helper::tokenise(line, '\t');
                 if (tokens.size() != 9) {
                     continue;
                 }
@@ -82,7 +94,7 @@ namespace bioscripts
 
                 const auto type = deduceType(tokens[2]);
                 if (type == bioscripts::gff::Record::Type::Unknown) {
-                    return;
+                    continue;
                 }
 
                 std::size_t start_pos = std::stoull(tokens[3]);
@@ -98,7 +110,7 @@ namespace bioscripts
 
                 const auto strand = deduceStrand(tokens[6]);
                 if (strand == bioscripts::Strand::Unknown) {
-                    return;
+                    continue;
                 }
 
                 std::optional<uint8_t> phase;
@@ -121,11 +133,11 @@ namespace bioscripts
                     .sequence_id = sequence_id,
                     .source = source,
                     .attributes = attributes
-                    });
+                });
             }
 
             auto Comparator = [](const auto& first, const auto& second) {
-                return (first.sequence_id < second.sequence_id)
+                return (first.sequence_id.to_string() < second.sequence_id.to_string())
                     && (first.start_pos < second.start_pos);
             };
 
@@ -140,6 +152,11 @@ namespace bioscripts
 
         //    }
         //}
+
+        std::size_t Records::size() const
+        {
+            return records.size();
+        }
 
         std::string extractAttribute(const Record& record, const std::string& attribute_name)
         {
@@ -158,12 +175,11 @@ namespace bioscripts
             return record.attributes.substr(attribute_value_start_pos, substring_length);
         }
 
-
-        Records::pointer Records::findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type)
+        Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, Record::Type type)
         {
             std::int64_t record_distance_to_genomic_position = std::numeric_limits<std::int64_t>::max();
             Records::pointer closest_record = nullptr;
-            for (auto& record : records[sequence_id]) {
+            for (auto& record : records[sequence_id.to_string()]) {
                 if (record.type != type) {
                     continue;
                 }
@@ -178,27 +194,25 @@ namespace bioscripts
             return closest_record;
         }
 
-
-        std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id)
+        std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id)
         {
-            if (!records.contains(sequence_id)) {
+            if (!records.contains(sequence_id.to_string())) {
                 return {};
             }
 
             std::vector<Record> results;
-            for (const auto& record : records[sequence_id]) {
+            for (const auto& record : records[sequence_id.to_string()]) {
                 if (record.start_pos <= genomic_position && record.end_pos >= genomic_position) {
                     results.push_back(record);
                 }
             }
-
             return results;
         }
 
-
-        std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id, const Record::Type type)
+        std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type)
         {
             auto results = findUnderlyingRecords(genomic_position, sequence_id);
+
             auto IsWrongFeatureType = [&type](const auto& elem) {
                 return (elem.type != type);
             };
@@ -206,15 +220,13 @@ namespace bioscripts
             for (const auto& record : results) {
                 std::erase_if(results, IsWrongFeatureType);
             }
-            
+
             return results;
         }
 
-
-        Records::reference Records::findLastRecord(Identifier sequence_id, std::string feature_id, Record::Type type)
+        void Records::findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, Record::Type type)
         {
-            bioscripts::gff::Record asd{};
-            return asd;
+
         }
 
     }

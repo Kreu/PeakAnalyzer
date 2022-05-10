@@ -44,6 +44,7 @@ namespace bioscripts
                     .score = score,
                     .pvalue = pvalue,
                     .qvalue = qvalue,
+                    .sequence_id = sequence_identifier,
                     .feature = Feature {
                         .start_pos = feature_start_pos,
                         .end_pos = feature_end_pos,
@@ -56,9 +57,15 @@ namespace bioscripts
             }
 		}
 
+        std::size_t Peaks::size() const
+        {
+            return peaks.size();
+        }
+
+
         double midpoint(const Peak& peak)
         {
-            return (peak.end_pos - peak.start_pos) / 2.0;
+            return (peak.start_pos + peak.end_pos) / 2.0;
         }
 
         Peaks::iterator Peaks::begin()
