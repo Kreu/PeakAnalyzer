@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "identifier.h"
 #include "peak.h"
 
 namespace bioscripts
@@ -16,6 +17,8 @@ namespace bioscripts
     {
         struct Record
         {
+            using Position = std::size_t;
+            using Database = std::string;
             enum class Type : uint8_t
             {
                 chromosome,
@@ -38,13 +41,13 @@ namespace bioscripts
 
             Type type;
             Strand strand;
-            std::size_t start_pos;
-            std::size_t end_pos;
+            Position start_pos;
+            Position end_pos;
             std::optional<uint8_t> phase;
             std::optional<double> score;
 
-            std::string sequence_id; 
-            std::string source;
+            Identifier<Full> sequence_id; 
+            Database source;
             std::string attributes;
 
             auto operator<=>(const Record& rhs) const = default;
@@ -64,14 +67,14 @@ namespace bioscripts
             using pointer = Record*;
             using const_pointer = const Record*;
 
+            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
+            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
+
             //reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
-            pointer findClosestRecord(std::size_t genomic_position, std::string sequence_id, Record::Type type);
+            pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, Record::Type type);
 
-            reference findLastRecord(Identifier sequence_id, std::string feature_id, Record::Type type);
-
-
-            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id);
-            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const std::string& sequence_id, const Record::Type type);
+            void findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, Record::Type type);
+            std::size_t size() const;
 
 
             //iterator find(const std::string& sequence_id, );

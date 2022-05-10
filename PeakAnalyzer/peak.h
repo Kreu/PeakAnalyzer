@@ -17,8 +17,8 @@ namespace bioscripts
 			std::size_t start_pos;
 			std::size_t end_pos;
 			Strand strand;
-			Identifier identifier; //Denotes the identifier under the peak. Usually it is the gene name, e.g. AT1G12345
-			Identifier ensembl_id; //This is the identifier associate with the peak after R analysis. More detailed "identifier", e.g. AT1G12345.2.exon4
+			Identifier<Gene> identifier; //Denotes the identifier under the peak. Usually it is the gene name, e.g. AT1G12345
+			Identifier<Transcript> ensembl_id; //This is the identifier associate with the peak after R analysis. More detailed "identifier", e.g. AT1G12345.2.exon4
 		};
 
 		struct Peak
@@ -48,6 +48,9 @@ namespace bioscripts
 			iterator end();
 			const_iterator end() const;
 			const_iterator cend() const;
+
+			std::size_t size() const;
+
 		private:
 			std::vector<Peak> peaks;
 		};
