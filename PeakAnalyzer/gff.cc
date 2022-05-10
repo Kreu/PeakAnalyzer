@@ -204,7 +204,6 @@ namespace bioscripts
             for (const auto& record : records[sequence_id.to_string()]) {
                 if (record.start_pos <= genomic_position && record.end_pos >= genomic_position) {
                     results.push_back(record);
-                    ++counter;
                 }
             }
             return results;
