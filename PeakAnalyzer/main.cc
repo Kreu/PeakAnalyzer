@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
 		auto overlapping_records = gff_records.findUnderlyingRecords(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 		bioscripts::gff::Records::pointer closest_record = nullptr;
 
+		//Remove those whose identifier is different from the called peak identifier
 		auto recordIdentifierDoesNotMatchPeakIdentifier = [&peak](const auto& elem)
 		{
 			return peak.feature.ensembl_id.to_string() != bioscripts::gff::extractAttribute(elem, "Name");
