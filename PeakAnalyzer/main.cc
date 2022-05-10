@@ -52,6 +52,12 @@ int main(int argc, char* argv[])
 
 
 
+		//std::cout << "After filtering there are " << overlapping_records.size() << " records left\n";
+
+		//if (overlapping_records.size() != 1) {
+		//	throw std::runtime_error("After filtering more than one record remains");
+		//}
+
 
 		//bioscripts::gff::Records::pointer closest_record = nullptr;
 
