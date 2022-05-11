@@ -1,5 +1,7 @@
 #include <fstream>
 #include <cmath>
+#include <cassert>
+
 
 #include <iostream>
 
@@ -59,9 +61,20 @@ namespace {
         }
     }
 
+    /**
+     * @brief  Calculate the absolute distance between record and @a genomic_position 
+     */
     std::size_t distanceToRecord(const std::size_t genomic_position, const bioscripts::gff::Record& record)
     {
-
+        auto distance_to_record = 0;
+        if (record.end_pos < genomic_position) {
+            distance_to_record = genomic_position - record.end_pos;
+        }
+        else if (record.start_pos > genomic_position) {
+            distance_to_record = record.start_pos - genomic_position;
+        }
+        assert(distance_to_record > 0, "Distance to record can not negative");
+        return distance_to_record;
     }
 }
 
@@ -175,19 +188,32 @@ namespace bioscripts
             return record.attributes.substr(attribute_value_start_pos, substring_length);
         }
 
-        Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, Record::Type type)
+        Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& gene_id, Record::Type type)
         {
-            std::int64_t record_distance_to_genomic_position = std::numeric_limits<std::int64_t>::max();
+            /* Closest record is defined as follows :
+                a) Record whose end position is closest to the genomic_position if that end position < genomic_position OR
+                b) Record whose start position is closest to the genomic_position if that start position > genomic_position
+             */
+            //std::cout << "Finding the closest record to " << gene_id.to_string() << " at position " << genomic_position << "\n";
+            std::int64_t current_smallest_distance = std::numeric_limits<std::int64_t>::max();
             Records::pointer closest_record = nullptr;
             for (auto& record : records[sequence_id.to_string()]) {
                 if (record.type != type) {
+                    //std::cout << "Record has the wrong type\n";
                     continue;
                 }
 
-                //TODO: The following calculation is not safe but very unlikely to ever cause problems considering the small size of genomes
-                //and consequently the low values of record start and end positions.
-                if ((record_distance_to_genomic_position - record.start_pos) < record_distance_to_genomic_position) {
-                    record_distance_to_genomic_position = record_distance_to_genomic_position - record.start_pos;
+                auto record_id = Identifier<Transcript>{ extractAttribute(record, "ID=CDS") };
+                if (record_id != gene_id) {
+                    //std::cout << "Record ID of " << record_id.to_string() << " does not match " << gene_id.to_string() << "\n";
+                    continue;
+                }                
+
+                auto distance_to_record = distanceToRecord(genomic_position, record);
+                //std::cout << "Distance to current record: " << current_smallest_distance << "\n";
+                if (distance_to_record < current_smallest_distance) {
+                    //std::cout << "Found a closer record at a distance of " << distance_to_record << "\n";
+                    current_smallest_distance = distance_to_record;
                     closest_record = &record;
                 }
             }
@@ -224,7 +250,7 @@ namespace bioscripts
             return results;
         }
 
-        void Records::findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, Record::Type type)
+        void Records::findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type)
         {
 
         }

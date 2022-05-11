@@ -22,34 +22,45 @@ int main(int argc, char* argv[])
 	std::cout << "Found " << peaks.size() << " records\n";
 	
 	std::cout << "Analysing peaks\n";
-	for (const auto& peak : peaks) {
+	for (const auto& peak : peaks)
+	{
 		auto midpoint = bioscripts::peak::midpoint(peak);
 
-		//std::cout << "Peak belongs to sequence ID of " << peak.feature.identifier.to_string() << "\n";
-
-		//Find all underlying records on the same chromosome
 		auto overlapping_records = gff_records.findUnderlyingRecords(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
-		//std::cout << "Found " << overlapping_records.size() << " records that are at peak midpoint at " << midpoint << "\n";
-
-		if (overlapping_records.empty()) {
-			//TODO: Find closest record instead
-			continue;
-		}
 
 		//Remove those whose identifier is different from the called peak identifier
 		auto recordIdentifierDoesNotMatchPeakIdentifier = [&peak](const auto& elem)
 		{
 			return peak.feature.identifier.to_string() != bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(elem, "ID=CDS") };
 		};
-
+		
 		std::erase_if(overlapping_records, recordIdentifierDoesNotMatchPeakIdentifier);
-		std::cout << "After filtering there are " << overlapping_records.size() << " records left\n";
+		//std::cout << "After filtering there are " << overlapping_records.size() << " records left\n";
 
-		for (const auto& record : overlapping_records) {
-			std::cout << bioscripts::gff::extractAttribute(record, "ID=CDS") << "\n";
-			std::cout << record.attributes << "\n";
-			std::cout << record.start_pos << ", " << record.end_pos << "\n";
+
+		if (overlapping_records.empty()) {
+			//TODO: Find closest record instead
+			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.feature.identifier, bioscripts::gff::Record::Type::CDS);
+
+			if (closest_record == nullptr) {
+				//std::cout << "No closest record found\n";
+			}
+
+			//std::cout << "Closest record to " << midpoint << " is " << closest_record->attributes << "\n";
+			//continue;
 		}
+
+		//std::cout << "Done\n";
+
+
+
+
+
+		//for (const auto& record : overlapping_records) {
+		//	std::cout << bioscripts::gff::extractAttribute(record, "ID=CDS") << "\n";
+		//	std::cout << record.attributes << "\n";
+		//	std::cout << record.start_pos << ", " << record.end_pos << "\n";
+		//}
 
 
 		//if (overlapping_records.size() != 1) {

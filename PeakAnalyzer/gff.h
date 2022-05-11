@@ -71,9 +71,9 @@ namespace bioscripts
             std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
 
             //reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
-            pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, Record::Type type);
+            pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& gene_id, Record::Type type);
 
-            void findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, Record::Type type);
+            void findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type);
             std::size_t size() const;
 
 
