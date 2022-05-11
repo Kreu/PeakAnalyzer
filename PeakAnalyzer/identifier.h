@@ -5,8 +5,6 @@
 
 #include <string>
 
-
-
 namespace bioscripts
 {
 	struct Full;
@@ -41,17 +39,20 @@ namespace bioscripts
 			if (tokens.empty()) {
 				return;
 			}
-			identifier = tokens[0];
+			gene_name = tokens[0];
 		}
 
-		//Identifier(const Identifier<Transcript>& id) : identifier(id.gene)
+		std::string gene() const
+		{
+			return gene_name;
+		}
 
 		std::string to_string() const
 		{
-			return identifier;
+			return gene_name;
 		}
 	private:
-		std::string identifier;
+		std::string gene_name;
 	};
 
 	template <>
@@ -65,34 +66,33 @@ namespace bioscripts
 			if (tokens.size() < 2) {
 				return;
 			}
-			identifier = tokens[0];
-			version = tokens[1];
+			gene_name = tokens[0];
+			transcript_version = tokens[1];
+		}
+
+		std::string gene() const
+		{
+			return gene_name;
+		}
+
+		std::string version() const
+		{
+			return transcript_version;
 		}
 
 		std::string to_string() const
 		{
 			static constexpr auto delimiter = '.';
-			return identifier + delimiter + version;
+			return gene_name + delimiter + transcript_version;
 		}
 	private:
-		std::string identifier;
-		std::string version;
+		std::string gene_name;
+		std::string transcript_version;
 	};
 
-	//template <typename T>
-	//bool operator==(const T& lhs, const T& rhs)
-	//{
-	//	return rhs.to_string() == lhs.to_string();
-	//}
+	bool operator==(const Identifier<Gene>& lhs, const Identifier<Transcript>& rhs);
 
-
-	//bool operator==(const Identifier<Transcript>& rhs, const Identifier<Transcript>& lhs)
-	//{
-	//	return rhs.to_string() == lhs.to_string();
-	//}
-
-
-
+	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Gene>& rhs);
 }
 
 #endif
