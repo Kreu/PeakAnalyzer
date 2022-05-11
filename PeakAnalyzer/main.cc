@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 
 		//Find all underlying records on the same chromosome
 		auto overlapping_records = gff_records.findUnderlyingRecords(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
-		std::cout << "Found " << overlapping_records.size() << " records that are at peak midpoint at " << midpoint << "\n";
+		//std::cout << "Found " << overlapping_records.size() << " records that are at peak midpoint at " << midpoint << "\n";
 
 		if (overlapping_records.empty()) {
 			//TODO: Find closest record instead
@@ -39,11 +39,17 @@ int main(int argc, char* argv[])
 		//Remove those whose identifier is different from the called peak identifier
 		auto recordIdentifierDoesNotMatchPeakIdentifier = [&peak](const auto& elem)
 		{
-			return peak.feature.identifier.to_string() != bioscripts::gff::extractAttribute(elem, "Name");
+			return peak.feature.identifier.to_string() != bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(elem, "ID=CDS") };
 		};
 
 		std::erase_if(overlapping_records, recordIdentifierDoesNotMatchPeakIdentifier);
 		std::cout << "After filtering there are " << overlapping_records.size() << " records left\n";
+
+		for (const auto& record : overlapping_records) {
+			std::cout << bioscripts::gff::extractAttribute(record, "ID=CDS") << "\n";
+			std::cout << record.attributes << "\n";
+			std::cout << record.start_pos << ", " << record.end_pos << "\n";
+		}
 
 
 		//if (overlapping_records.size() != 1) {
