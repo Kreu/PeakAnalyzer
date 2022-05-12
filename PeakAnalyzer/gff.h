@@ -13,79 +13,75 @@
 
 namespace bioscripts
 {
-    namespace gff
-    {
-        struct Record
-        {
-            using Position = std::size_t;
-            using Database = std::string;
-            enum class Type : uint8_t
-            {
-                chromosome,
-                gene,
-                mRNA,
-                five_prime_UTR,
-                exon,
-                CDS,
-                three_prime_UTR,
-                ncRNA_gene,
-                lnc_RNA,
-                miRNA,
-                tRNA,
-                ncRNA,
-                snoRNA,
-                snRNA,
-                rRNA,
-                Unknown
-            };
+	namespace gff
+	{
+		struct Record
+		{
+			using Position = std::size_t;
+			using Database = std::string;
+			enum class Type : uint8_t
+			{
+				chromosome,
+				gene,
+				mRNA,
+				five_prime_UTR,
+				exon,
+				CDS,
+				three_prime_UTR,
+				ncRNA_gene,
+				lnc_RNA,
+				miRNA,
+				tRNA,
+				ncRNA,
+				snoRNA,
+				snRNA,
+				rRNA,
+				Unknown
+			};
 
-            Type type;
-            Strand strand;
-            Position start_pos;
-            Position end_pos;
-            std::optional<uint8_t> phase;
-            std::optional<double> score;
+			Type type;
+			Strand strand;
+			Position start_pos;
+			Position end_pos;
+			std::optional<uint8_t> phase;
+			std::optional<double> score;
 
-            Identifier<Full> sequence_id; 
-            Database source;
-            std::string attributes;
+			Identifier<Full> sequence_id;
+			Database source;
+			std::string attributes;
 
-            auto operator<=>(const Record& rhs) const = default;
-        };
+			auto operator<=>(const Record& rhs) const = default;
+		};
 
-        std::string extractAttribute(const Record& record, const std::string& attribute_name);
+		std::string extractAttribute(const Record& record, const std::string& attribute_name);
 
-        class Records
-        {
-        public:
-            Records(const std::filesystem::path& gff_records);
+		class Records
+		{
+		public:
+			Records(const std::filesystem::path& gff_records);
 
-            using iterator = std::vector<Record>::iterator;
-            using const_iterator = std::vector<Record>::const_iterator;
-            using reference = Record&;
-            using const_reference = const Record;
-            using pointer = Record*;
-            using const_pointer = const Record*;
+			using iterator = std::vector<Record>::iterator;
+			using const_iterator = std::vector<Record>::const_iterator;
+			using reference = Record&;
+			using const_reference = const Record;
+			using pointer = Record*;
+			using const_pointer = const Record*;
 
-            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
-            std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
+			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
+			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
 
-            //reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
-            pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& gene_id, Record::Type type);
+			//reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
+			pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& gene_id, Record::Type type);
 
-            void findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type);
-            std::size_t size() const;
+			void findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type);
+			std::size_t size() const;
 
 
-            //iterator find(const std::string& sequence_id, );
-        private:
-            std::unordered_map<std::string, std::vector<Record>> records;
-        };
-
- 
-    }
-
-    
+			//iterator find(const std::string& sequence_id, );
+		private:
+			std::unordered_map<std::string, std::vector<Record>> records;
+		};
+	}
 }
 
 #endif // !BIOSCRIPTS_GFF_H

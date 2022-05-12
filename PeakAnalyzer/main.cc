@@ -37,52 +37,14 @@ int main(int argc, char* argv[])
 		std::erase_if(overlapping_records, recordIdentifierDoesNotMatchPeakIdentifier);
 		//std::cout << "After filtering there are " << overlapping_records.size() << " records left\n";
 
-
 		if (overlapping_records.empty()) {
-			//TODO: Find closest record instead
 			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.feature.identifier, bioscripts::gff::Record::Type::CDS);
-
 			if (closest_record == nullptr) {
-				//std::cout << "No closest record found\n";
+				continue;
 			}
-
-			//std::cout << "Closest record to " << midpoint << " is " << closest_record->attributes << "\n";
-			//continue;
 		}
 
-		//std::cout << "Done\n";
-
-
-
-
-
-		//for (const auto& record : overlapping_records) {
-		//	std::cout << bioscripts::gff::extractAttribute(record, "ID=CDS") << "\n";
-		//	std::cout << record.attributes << "\n";
-		//	std::cout << record.start_pos << ", " << record.end_pos << "\n";
-		//}
-
-
-		//if (overlapping_records.size() != 1) {
-		//	throw std::runtime_error("After filtering more than one record remains");
-		//}
-
-
-
-		//std::cout << "After filtering there are " << overlapping_records.size() << " records left\n";
-
-		//if (overlapping_records.size() != 1) {
-		//	throw std::runtime_error("After filtering more than one record remains");
-		//}
-
-
-		//bioscripts::gff::Records::pointer closest_record = nullptr;
-
-		//else if (overlapping_records.empty()) {
-		//	closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
-		//}
-
-		////Recreate the full CDS from the peak.
+		//Recreate the full CDS from the peak.
 		//auto last_peak_cds = gff_records.findLastRecord(peak.feature.ensembl_id, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 
 
