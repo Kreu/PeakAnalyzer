@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "identifier.h"
 #include "helpers.h"
 #include "gff.h"
 
@@ -76,6 +77,8 @@ namespace {
 		assert(distance_to_record > 0, "Distance to record can not negative");
 		return distance_to_record;
 	}
+
+
 }
 
 namespace bioscripts
@@ -159,13 +162,6 @@ namespace bioscripts
 			}
 		}
 
-		//Record& Records::findClosestRecord(std::size_t genomic_position, std::string sequence_id)
-		//{
-		//    for (const auto& record : records[sequence_id]) {
-
-		//    }
-		//}
-
 		std::size_t Records::size() const
 		{
 			return records.size();
@@ -245,16 +241,111 @@ namespace bioscripts
 			return results;
 		}
 
+		Records::iterator Records::begin()
+		{
+			return records.begin();
+		}
+
+		Records::const_iterator Records::begin() const
+		{
+			return records.begin();
+		}
+
+		Records::const_iterator Records::cbegin() const
+		{
+			return records.cbegin();
+		}
+
+		Records::iterator Records::end()
+		{
+			return records.end();
+		}
+
+		Records::const_iterator Records::end() const
+		{
+			return records.end();
+		}
+
+		Records::const_iterator Records::cend() const
+		{
+			return records.cend();
+		}
+
+
+
+
+		std::vector<Record>& Records::data(const Identifier<Full>& sequence_id)
+		{
+			auto& corresponding_records = records.at(sequence_id.to_string());
+			return corresponding_records;
+		}
+
+		const std::vector<Record>& Records::data(const Identifier<Full>& sequence_id) const
+		{
+			auto& corresponding_records = records.at(sequence_id.to_string());
+			return corresponding_records;
+		}
+
+		//Records::iterator Records::data(const Identifier<Full>& sequence_id)
+		//{
+		//	auto corresponding_records = records.at(sequence_id.to_string());
+		//	return corresponding_records.begin();
+		//}
+
+		//Records::const_iterator Records::data(const Identifier<Full>& sequence_id) const
+		//{
+		//	auto corresponding_records = records.at(sequence_id.to_string());
+		//	return corresponding_records.cbegin();
+		//}
+
 		void Records::findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type)
 		{
 			
 
-			for (const auto& record : records.at(sequence_id.to_string())) {
+			//for (const auto& record : records.at(sequence_id.to_string())) {
 
-				auto record_identifier = bioscripts::Identifier{ bioscripts::gff::extractAttribute()}
+			//	auto record_identifier = bioscripts::Identifier{ bioscripts::gff::extractAttribute()}
 
-				if (record.)
+			//	if (record.)
+			//}
+		}
+
+		/**
+		 @brief  Find all CDS type GFF records that belong to the same gene as @a starting_record. Only records
+				 after the @a starting_record are considered.
+		 */
+		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
+		{
+			//std::cout << "Analysing " << starting_record.attributes << "\n";
+
+			auto record_sequence = starting_record.sequence_id.to_string();
+
+			auto hasWrongSequenceType = [&starting_record](const auto& record)
+			{
+				return starting_record.type != record.type;
+			};
+
+			auto same_chromosome_records = records.data(record_sequence);
+			std::erase_if(same_chromosome_records, hasWrongSequenceType);
+
+			std::vector<bioscripts::gff::Record> final_records;
+
+			for (const auto& record : same_chromosome_records) {
+				if (record.start_pos <= starting_record.start_pos) {
+					continue;
+				}
+
+				auto record_gene_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
+				auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
+				if (record_gene_id != starting_record_id) {
+					continue;
+				}
+
+				//std::cout << "Found a match with " << record.attributes << "\n";
+				final_records.push_back(record);
 			}
+
+			return final_records;
 		}
 
 	}

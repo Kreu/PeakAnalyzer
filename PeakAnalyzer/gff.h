@@ -60,13 +60,26 @@ namespace bioscripts
 		public:
 			Records(const std::filesystem::path& gff_records);
 
-			using iterator = std::vector<Record>::iterator;
-			using const_iterator = std::vector<Record>::const_iterator;
+			using iterator = std::unordered_map<std::string, std::vector<Record>>::iterator;
+			using const_iterator = std::unordered_map<std::string, std::vector<Record>>::const_iterator;
 			using reference = Record&;
 			using const_reference = const Record;
 			using pointer = Record*;
 			using const_pointer = const Record*;
 
+			iterator begin();
+			const_iterator begin() const;
+			const_iterator cbegin() const;
+			iterator end();
+			const_iterator end() const;
+			const_iterator cend() const;
+
+			//iterator data(const Identifier<Full>& sequence_id);
+			//const_iterator data(const Identifier<Full>& sequence_id) const;
+
+			std::vector<Record>& data(const Identifier<Full>& sequence_id);
+			const std::vector<Record>& data(const Identifier<Full>& sequence_id) const;
+			
 			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
 			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
 
@@ -81,6 +94,8 @@ namespace bioscripts
 		private:
 			std::unordered_map<std::string, std::vector<Record>> records;
 		};
+
+		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records);
 	}
 }
 

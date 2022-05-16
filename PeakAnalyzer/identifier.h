@@ -93,6 +93,10 @@ namespace bioscripts
 	bool operator==(const Identifier<Gene>& lhs, const Identifier<Transcript>& rhs);
 
 	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Gene>& rhs);
+
+	bool operator==(const Identifier<Gene>& lhs, const Identifier<Gene>& rhs);
+
+	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Transcript>& rhs);
 }
 
 #endif
