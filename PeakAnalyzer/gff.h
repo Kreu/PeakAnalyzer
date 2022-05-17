@@ -74,19 +74,28 @@ namespace bioscripts
 			const_iterator end() const;
 			const_iterator cend() const;
 
-			//iterator data(const Identifier<Full>& sequence_id);
-			//const_iterator data(const Identifier<Full>& sequence_id) const;
-
 			std::vector<Record>& data(const Identifier<Full>& sequence_id);
 			const std::vector<Record>& data(const Identifier<Full>& sequence_id) const;
 			
+			/**
+			 * @brief  Find all GFF records that overlap the @a genomic position with the same @sequence id
+			 */
 			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
+
+			/**
+			 * @brief  Find all GFF records that overlap the @a genomic position with the same @sequence id and @a type
+			 */
 			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
 
-			//reference findClosestRecord(std::size_t genomic_position, std::string sequence_id);
-			pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& gene_id, Record::Type type);
+			/**
+			 * @brief  Find the closest record to @a genomic_position with the same gene identifier as @a peak_gene_id; as well as same @a sequence_id and @a type
+			 * @return  The closest record, or nullptr if no record could not be 
+			 */
+			pointer findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& peak_gene_id, Record::Type type);
 
-			void findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type);
+			/**
+			 * @brief  Return the number of records currently held.
+			 */
 			std::size_t size() const;
 
 

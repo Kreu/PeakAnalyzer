@@ -10,6 +10,9 @@
 #include "gff.h"
 
 namespace {
+	/**
+	 * @brief  Turn a string representation of a sequence type into an actual type.
+	 */
 	bioscripts::gff::Record::Type deduceType(const std::string& str)
 	{
 		if (str == "chromosome") {
@@ -64,21 +67,22 @@ namespace {
 
 	/**
 	 * @brief  Calculate the absolute distance between record and @a genomic_position
+	 * 
+	 * The distance is calculated from the end of the record to the genomic position if the
+	 * record appears before the @a genomic_position; otherwise the distance is calculated
+	 * to the genomic position until the start position of the record.
 	 */
 	std::size_t distanceToRecord(const std::size_t genomic_position, const bioscripts::gff::Record& record)
 	{
-		auto distance_to_record = 0;
+		std::size_t distance_to_record = 0;
 		if (record.end_pos < genomic_position) {
 			distance_to_record = genomic_position - record.end_pos;
 		}
 		else if (record.start_pos > genomic_position) {
 			distance_to_record = record.start_pos - genomic_position;
 		}
-		assert(distance_to_record > 0, "Distance to record can not negative");
 		return distance_to_record;
 	}
-
-
 }
 
 namespace bioscripts
@@ -164,9 +168,18 @@ namespace bioscripts
 
 		std::size_t Records::size() const
 		{
-			return records.size();
+			std::size_t records_number = 0;
+			for (const auto& [sequence_id, entries] : records) {
+				records_number += entries.size();
+			}
+			return records_number;
 		}
 
+		/**
+		 * @brief  Extract the attribute value of the given @a attribute_name
+		 * @return  Value of the given @a attribute_name associated with the @record,
+		 *			or an empty string if no @a attribute_name is present.
+		 */
 		std::string extractAttribute(const Record& record, const std::string& attribute_name)
 		{
 			auto attribute_name_start_pos = record.attributes.find(attribute_name);
@@ -184,7 +197,7 @@ namespace bioscripts
 			return record.attributes.substr(attribute_value_start_pos, substring_length);
 		}
 
-		Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& gene_id, Record::Type type)
+		Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& peak_gene_id, Record::Type type)
 		{
 			/* Closest record is defined as follows :
 				a) Record whose end position is closest to the genomic_position if that end position < genomic_position OR
@@ -198,7 +211,7 @@ namespace bioscripts
 				}
 
 				auto record_id = Identifier<Transcript>{ extractAttribute(record, "ID=CDS") };
-				if (record_id != gene_id) {
+				if (record_id != peak_gene_id) {
 					continue;
 				}
 
@@ -271,9 +284,6 @@ namespace bioscripts
 			return records.cend();
 		}
 
-
-
-
 		std::vector<Record>& Records::data(const Identifier<Full>& sequence_id)
 		{
 			auto& corresponding_records = records.at(sequence_id.to_string());
@@ -286,38 +296,14 @@ namespace bioscripts
 			return corresponding_records;
 		}
 
-		//Records::iterator Records::data(const Identifier<Full>& sequence_id)
-		//{
-		//	auto corresponding_records = records.at(sequence_id.to_string());
-		//	return corresponding_records.begin();
-		//}
-
-		//Records::const_iterator Records::data(const Identifier<Full>& sequence_id) const
-		//{
-		//	auto corresponding_records = records.at(sequence_id.to_string());
-		//	return corresponding_records.cbegin();
-		//}
-
-		void Records::findLastRecord(const Identifier<Full>& sequence_id, const Identifier<Gene>& feature_id, const Identifier<Gene>& gene_id, Record::Type type)
-		{
-			
-
-			//for (const auto& record : records.at(sequence_id.to_string())) {
-
-			//	auto record_identifier = bioscripts::Identifier{ bioscripts::gff::extractAttribute()}
-
-			//	if (record.)
-			//}
-		}
-
 		/**
-		 @brief  Find all CDS type GFF records that belong to the same gene as @a starting_record. Only records
-				 after the @a starting_record are considered.
+		 * @brief  Find all CDS type GFF records that belong to the same transcript as @a starting_record. Only records
+		 *		   after the @a starting_record are considered.
+		 *
+		 * @return  All CDS GFF records corresponding to the same transcript ID of the @starting_record, including the @a starting_record. 
 		 */
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
 		{
-			//std::cout << "Analysing " << starting_record.attributes << "\n";
-
 			auto record_sequence = starting_record.sequence_id.to_string();
 
 			auto hasWrongSequenceType = [&starting_record](const auto& record)
@@ -329,8 +315,17 @@ namespace bioscripts
 			std::erase_if(same_chromosome_records, hasWrongSequenceType);
 
 			std::vector<bioscripts::gff::Record> final_records;
+			final_records.push_back(starting_record);
 
-			for (const auto& record : same_chromosome_records) {
+			//Find the first record with a starting position larger than the current starting_record.
+
+			auto Comparator = [](const auto& gff_record, const auto& start_pos) {
+				return (gff_record.start_pos < start_pos);
+			};
+			auto start_looking_from = std::lower_bound(std::begin(same_chromosome_records), std::end(same_chromosome_records), starting_record.start_pos, Comparator);
+
+			for (auto it = start_looking_from; it != std::end(same_chromosome_records); ++it) {
+				const auto& record = *it;
 				if (record.start_pos <= starting_record.start_pos) {
 					continue;
 				}
