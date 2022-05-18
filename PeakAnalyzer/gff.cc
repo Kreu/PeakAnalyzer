@@ -9,6 +9,8 @@
 #include "helpers.h"
 #include "gff.h"
 
+#include "easylogging++.h"
+
 namespace {
 	/**
 	 * @brief  Turn a string representation of a sequence type into an actual type.
@@ -91,8 +93,10 @@ namespace bioscripts
 	{
 		Records::Records(const std::filesystem::path& gff_records)
 		{
+			LOG(DEBUG) << "Parsing GFF records from " << gff_records.string();
 			std::ifstream f{ gff_records };
 			if (!f.is_open()) {
+				LOG(ERROR) << "Failed to open " << gff_records.string();
 				return;
 			}
 
@@ -182,6 +186,7 @@ namespace bioscripts
 		 */
 		std::string extractAttribute(const Record& record, const std::string& attribute_name)
 		{
+			//LOG(DEBUG) << "Extracting " << attribute_name << " from record with sequence ID of " << record.sequence_id.to_string() << " and attributes of " << record.attributes << "\n";
 			auto attribute_name_start_pos = record.attributes.find(attribute_name);
 			if (attribute_name_start_pos == std::string::npos) {
 				return "";
@@ -194,6 +199,7 @@ namespace bioscripts
 			constexpr auto delimiter = ';';
 			auto next_delimiter_pos = record.attributes.find(delimiter, attribute_value_start_pos);
 			auto substring_length = next_delimiter_pos - attribute_value_start_pos;
+			//LOG(DEBUG) << "Extracted attribute value is \"" << record.attributes.substr(attribute_value_start_pos, substring_length) << "\"\n";
 			return record.attributes.substr(attribute_value_start_pos, substring_length);
 		}
 
@@ -203,7 +209,8 @@ namespace bioscripts
 				a) Record whose end position is closest to the genomic_position if that end position < genomic_position OR
 				b) Record whose start position is closest to the genomic_position if that start position > genomic_position
 			 */
-			std::int64_t current_smallest_distance = std::numeric_limits<std::int64_t>::max();
+			//LOG(DEBUG) << "Finding closest record to " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\", peak gene identifier is " << peak_gene_id.to_string() << "\n";
+			std::int64_t current_smallest_distance = (std::numeric_limits<std::int64_t>::max)();
 			Records::pointer closest_record = nullptr;
 			for (auto& record : records[sequence_id.to_string()]) {
 				if (record.type != type) {
@@ -216,9 +223,11 @@ namespace bioscripts
 				}
 
 				auto distance_to_record = distanceToRecord(genomic_position, record);
+				//LOG(DEBUG) << "Calculated distance to record: " << distance_to_record << "\n";
 				if (distance_to_record < current_smallest_distance) {
 					current_smallest_distance = distance_to_record;
 					closest_record = &record;
+					//LOG(DEBUG) << "Found a closer record on sequence \"" << closest_record->sequence_id.to_string() << "\", record attributes are " << closest_record->attributes << "\n";
 				}
 			}
 			return closest_record;
@@ -226,6 +235,7 @@ namespace bioscripts
 
 		std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id)
 		{
+			//LOG(DEBUG) << "Finding underlying record at position " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\n";
 			if (!records.contains(sequence_id.to_string())) {
 				return {};
 			}
@@ -233,9 +243,11 @@ namespace bioscripts
 			std::vector<Record> results;
 			for (const auto& record : records[sequence_id.to_string()]) {
 				if (record.start_pos <= genomic_position && record.end_pos >= genomic_position) {
+					//LOG(DEBUG) << "Found a record, attributes are " << record.attributes << "\n";
 					results.push_back(record);
 				}
 			}
+			//LOG(DEBUG) << "Found " << results.size() << " underlying records\n";
 			return results;
 		}
 
@@ -246,11 +258,11 @@ namespace bioscripts
 			auto IsWrongFeatureType = [&type](const auto& elem) {
 				return (elem.type != type);
 			};
-
+			//LOG(DEBUG) << "Found " << results.size() << " underlying records\n";
 			for (const auto& record : results) {
 				std::erase_if(results, IsWrongFeatureType);
 			}
-
+			//LOG(DEBUG) << "After removing records of incorrect type, there are " << results.size() << " underlying records\n";
 			return results;
 		}
 
@@ -305,7 +317,7 @@ namespace bioscripts
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
 		{
 			auto record_sequence = starting_record.sequence_id.to_string();
-
+			//LOG(DEBUG) << "Collecting all CDS records of " << record_sequence << "\n";
 			auto hasWrongSequenceType = [&starting_record](const auto& record)
 			{
 				return starting_record.type != record.type;
@@ -335,8 +347,7 @@ namespace bioscripts
 				if (record_gene_id != starting_record_id) {
 					continue;
 				}
-
-				//std::cout << "Found a match with " << record.attributes << "\n";
+				//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
 				final_records.push_back(record);
 			}
 

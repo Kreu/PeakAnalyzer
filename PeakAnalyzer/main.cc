@@ -5,6 +5,9 @@
 #include <fstream>
 #include <iostream>
 
+#include "easylogging++.h"
+INITIALIZE_EASYLOGGINGPP
+
 struct TranscriptData
 {
 	std::size_t id;
@@ -15,6 +18,21 @@ struct TranscriptData
 
 namespace
 {
+	void configureLogger(bool debug_enabled)
+	{
+		el::Configurations default_logging;
+		default_logging.setToDefault();
+		if (debug_enabled) {
+			default_logging.set(el::Level::Debug, el::ConfigurationType::Enabled, "true");
+			default_logging.set(el::Level::Debug, el::ConfigurationType::Filename, "debug.log");
+			default_logging.set(el::Level::Debug, el::ConfigurationType::ToStandardOutput, "false");
+		}
+		default_logging.set(el::Level::Info, el::ConfigurationType::ToStandardOutput, "false");
+		default_logging.set(el::Level::Info, el::ConfigurationType::Filename, "peaks.log");
+		default_logging.set(el::Level::Info, el::ConfigurationType::Format, "%datetime %level %msg");
+		el::Loggers::reconfigureLogger("default", default_logging);
+	}
+
 	void writeOutputFile(const std::filesystem::path& output_file, const std::vector<TranscriptData>& data) {
 		std::ofstream of;
 		of.open(output_file);
@@ -33,8 +51,11 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	configureLogger(true);
+
 	auto gff_file = argv[2];
 	auto gff_records = bioscripts::gff::Records{ gff_file };
+	LOG(INFO) << "Found " << gff_records.size() << " GFF records";
 
 	//We are only interested in the CDS records.
 	auto isNotCdsRecord = [](const auto& elem)
@@ -45,17 +66,20 @@ int main(int argc, char* argv[])
 	for (auto& [id, records] : gff_records) {
 		std::erase_if(records, isNotCdsRecord);
 	}
+	LOG(DEBUG) << "After deleting non-CDS records, there are " << gff_records.size() << " left";
 	std::cout << "Finished deleting all records that is not CDS\n";
 
 	auto peaks_file = argv[1];
 	auto peaks = bioscripts::peak::Peaks{ peaks_file };
+	LOG(INFO) << "Found " << peaks.size() << " peaks";
 
 	std::vector<TranscriptData> data_to_write;
-	std::cout << "Analysing peaks\n";
+	LOG(INFO) << "Analysing peaks\n";
 	std::size_t peak_id = 0;
 	for (const auto& peak : peaks)
 	{
 		auto midpoint = bioscripts::peak::midpoint(peak);
+		LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
 
 		auto records_under_the_peak = gff_records.findUnderlyingRecords(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 
@@ -66,6 +90,7 @@ int main(int argc, char* argv[])
 		};
 		
 		std::erase_if(records_under_the_peak, recordIdentifierDoesNotMatchPeakIdentifier);
+		LOG(DEBUG) << records_under_the_peak.size() << " GFF records found under the peak";
 
 		//If there are no records underneath the peak midpoint, find the closest record instead
 
@@ -74,9 +99,11 @@ int main(int argc, char* argv[])
 			if (closest_record == nullptr) {
 				continue;
 			}
-
+			LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
 			auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(*closest_record, gff_records);
+			LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 			for (const auto& rec : all_cds_records) {
+				LOG(DEBUG) << "Record attribute: " << rec.attributes;
 				data_to_write.push_back(TranscriptData{
 					.id = peak_id,
 					.start_pos = rec.start_pos,
@@ -88,8 +115,10 @@ int main(int argc, char* argv[])
 		else {
 			for (auto& record : records_under_the_peak) {
 				auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(record, gff_records);
-
+				LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 				for (const auto& rec : all_cds_records) {
+					LOG(DEBUG) << "Record attribute: " << rec.attributes;
+
 					data_to_write.push_back(TranscriptData{
 						.id = peak_id,
 						.start_pos = rec.start_pos,
