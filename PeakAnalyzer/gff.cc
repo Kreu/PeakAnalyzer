@@ -308,6 +308,21 @@ namespace bioscripts
 			return corresponding_records;
 		}
 
+
+		Records fetchRecords(Records records, Record::Type type)
+		{
+			auto isWrongRecordType = [&type](const auto& elem)
+			{
+				return elem.type != type;
+			};
+
+			for (auto& [id, records] : records) {
+				std::erase_if(records, isWrongRecordType);
+			}
+
+			return records;
+		}
+
 		/**
 		 * @brief  Find all CDS type GFF records that belong to the same transcript as @a starting_record. Only records
 		 *		   after the @a starting_record are considered.

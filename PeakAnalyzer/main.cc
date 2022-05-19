@@ -40,6 +40,11 @@ namespace
 			of << elem.id << "\t" << elem.transcript_id << "\t" << elem.start_pos << "\t" << elem.end_pos << "\n";
 		}
 	}
+
+
+	void analysePeaks()
+
+
 }
 
 
@@ -55,23 +60,16 @@ int main(int argc, char* argv[])
 
 	auto gff_file = argv[2];
 	auto gff_records = bioscripts::gff::Records{ gff_file };
-	LOG(INFO) << "Found " << gff_records.size() << " GFF records";
 
-	//We are only interested in the CDS records.
-	auto isNotCdsRecord = [](const auto& elem)
-	{
-		return elem.type != bioscripts::gff::Record::Type::CDS;
-	};
-
-	for (auto& [id, records] : gff_records) {
-		std::erase_if(records, isNotCdsRecord);
-	}
-	LOG(DEBUG) << "After deleting non-CDS records, there are " << gff_records.size() << " left";
-	std::cout << "Finished deleting all records that is not CDS\n";
+	auto cds_gff_records = bioscripts::gff::fetchRecords(gff_records, bioscripts::gff::Record::Type::CDS);
 
 	auto peaks_file = argv[1];
 	auto peaks = bioscripts::peak::Peaks{ peaks_file };
-	LOG(INFO) << "Found " << peaks.size() << " peaks";
+
+
+
+
+
 
 	std::vector<TranscriptData> data_to_write;
 	LOG(INFO) << "Analysing peaks\n";

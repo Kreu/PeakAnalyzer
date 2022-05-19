@@ -5,7 +5,6 @@
 
 namespace bioscripts
 {
-
     enum class Strand : uint8_t
     {
         Sense,

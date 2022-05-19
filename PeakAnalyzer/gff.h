@@ -104,6 +104,8 @@ namespace bioscripts
 			std::unordered_map<std::string, std::vector<Record>> records;
 		};
 
+		Records fetchRecords(Records records, Record::Type type);
+
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records);
 	}
 }

@@ -64,7 +64,7 @@ namespace bioscripts
 			auto tokens = helper::tokenise(id, '.');
 
 			if (tokens.size() < 2) {
-				return;
+				throw std::logic_error("Cannot create a transcript identifier from " + id);
 			}
 			gene_name = tokens[0];
 			transcript_version = tokens[1];
@@ -95,8 +95,11 @@ namespace bioscripts
 	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Gene>& rhs);
 
 	bool operator==(const Identifier<Gene>& lhs, const Identifier<Gene>& rhs);
+	bool operator!=(const Identifier<Gene>& lhs, const Identifier<Gene>& rhs);
 
 	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Transcript>& rhs);
+	bool operator!=(const Identifier<Transcript>& lhs, const Identifier<Transcript>& rhs);
+
 }
 
 #endif

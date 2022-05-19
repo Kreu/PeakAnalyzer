@@ -62,7 +62,6 @@ namespace bioscripts
             return peaks.size();
         }
 
-
         double midpoint(const Peak& peak)
         {
             return (peak.start_pos + peak.end_pos) / 2.0;

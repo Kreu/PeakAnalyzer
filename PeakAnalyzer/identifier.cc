@@ -17,9 +17,19 @@ namespace bioscripts
 		return lhs.to_string() == rhs.to_string();
 	}
 
+	bool operator!=(const Identifier<Gene>& lhs, const Identifier<Gene>& rhs)
+	{
+		return !(lhs == rhs);
+	}
+
 	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Transcript>& rhs)
 	{
 		return lhs.to_string() == rhs.to_string();
+	}
+
+	bool operator!=(const Identifier<Transcript>& lhs, const Identifier<Transcript>& rhs)
+	{
+		return !(lhs == rhs);
 	}
 
 }
