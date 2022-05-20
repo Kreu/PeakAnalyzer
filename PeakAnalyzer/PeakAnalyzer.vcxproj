@@ -131,6 +131,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,18 +141,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="easylogging++.cc" />
     <ClCompile Include="gff.cc" />
     <ClCompile Include="helpers.cc" />
     <ClCompile Include="identifier.cc" />
     <ClCompile Include="main.cc" />
     <ClCompile Include="peak.cc" />
+    <ClCompile Include="range.cc" />
     <ClCompile Include="strand.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="easylogging++.h" />
     <ClInclude Include="gff.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="identifier.h" />
     <ClInclude Include="peak.h" />
+    <ClInclude Include="range.h" />
     <ClInclude Include="strand.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
