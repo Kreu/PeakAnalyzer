@@ -63,15 +63,11 @@ int main(int argc, char* argv[])
 
 	auto gff_file = argv[2];
 	auto gff_records = bioscripts::gff::Records{ gff_file };
-
+	//We are only interested in CDS records because we want to reconsitute the protein-coding parts and nothing else
 	auto cds_gff_records = bioscripts::gff::fetchRecords(gff_records, bioscripts::gff::Record::Type::CDS);
 
 	auto peaks_file = argv[1];
 	auto peaks = bioscripts::peak::Peaks{ peaks_file };
-
-
-
-
 
 
 	std::vector<TranscriptData> data_to_write;
@@ -82,7 +78,7 @@ int main(int argc, char* argv[])
 		auto midpoint = bioscripts::peak::midpoint(peak);
 		LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
 
-		auto records_under_the_peak = gff_records.findUnderlyingRecords(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
+		auto records_under_the_peak = gff_records.getRecordsAt(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 
 		//Remove those whose identifier is different from the called peak identifier
 		auto recordIdentifierDoesNotMatchPeakIdentifier = [&peak](const auto& elem)

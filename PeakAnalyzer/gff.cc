@@ -233,7 +233,7 @@ namespace bioscripts
 			return closest_record;
 		}
 
-		std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id)
+		std::vector<Record> Records::getRecordsAt(const std::size_t genomic_position, const Identifier<Full>& sequence_id)
 		{
 			//LOG(DEBUG) << "Finding underlying record at position " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\n";
 			if (!records.contains(sequence_id.to_string())) {
@@ -251,9 +251,9 @@ namespace bioscripts
 			return results;
 		}
 
-		std::vector<Record> Records::findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type)
+		std::vector<Record> Records::getRecordsAt(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type)
 		{
-			auto results = findUnderlyingRecords(genomic_position, sequence_id);
+			auto results = getRecordsAt(genomic_position, sequence_id);
 
 			auto IsWrongFeatureType = [&type](const auto& elem) {
 				return (elem.type != type);

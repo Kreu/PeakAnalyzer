@@ -80,12 +80,12 @@ namespace bioscripts
 			/**
 			 * @brief  Find all GFF records that overlap the @a genomic position with the same @sequence id
 			 */
-			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
+			std::vector<Record> getRecordsAt(const std::size_t genomic_position, const Identifier<Full>& sequence_id);
 
 			/**
 			 * @brief  Find all GFF records that overlap the @a genomic position with the same @sequence id and @a type
 			 */
-			std::vector<Record> findUnderlyingRecords(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
+			std::vector<Record> getRecordsAt(const std::size_t genomic_position, const Identifier<Full>& sequence_id, const Record::Type type);
 
 			/**
 			 * @brief  Find the closest record to @a genomic_position with the same gene identifier as @a peak_gene_id; as well as same @a sequence_id and @a type
