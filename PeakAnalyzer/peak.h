@@ -14,11 +14,11 @@ namespace bioscripts
 	{
 		struct Feature
 		{
-			std::size_t start_pos;
-			std::size_t end_pos;
+			//std::size_t start_pos;
+			//std::size_t end_pos;
 			Strand strand;
 			Identifier<Gene> identifier; //Denotes the identifier under the peak. Usually it is the gene name, e.g. AT1G12345
-			Identifier<Transcript> ensembl_id; //This is the identifier associate with the peak after R analysis. More detailed "identifier", e.g. AT1G12345.2.exon4
+			//Identifier<Transcript> ensembl_id; //This is the identifier associate with the peak after R analysis. More detailed "identifier", e.g. AT1G12345.2.exon4
 		};
 
 		struct Peak

@@ -332,7 +332,7 @@ namespace bioscripts
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
 		{
 			auto record_sequence = starting_record.sequence_id.to_string();
-			LOG(DEBUG) << "Collecting all CDS records of " << record_sequence << "\n";
+			//LOG(DEBUG) << "Collecting all CDS records of " << record_sequence << "\n";
 			auto hasWrongSequenceType = [&starting_record](const auto& record)
 			{
 				return starting_record.type != record.type;
@@ -341,32 +341,52 @@ namespace bioscripts
 			auto same_chromosome_records = records.data(record_sequence);
 			std::erase_if(same_chromosome_records, hasWrongSequenceType);
 
-			std::vector<bioscripts::gff::Record> final_records;
-			final_records.push_back(starting_record);
-
-			//Find the first record with a starting position larger than the current starting_record.
+			//If the record is on the sense strand, the subsequent CDS records are upstream of the starting record.
+			//If the record is on the antisense strand, the subsequent CDS records are before.
+			std::vector<bioscripts::gff::Record>::iterator end_iterator;
+			if (starting_record.strand == bioscripts::Strand::Sense) {
+				end_iterator = std::end(same_chromosome_records);
+			}
+			else if (starting_record.strand == bioscripts::Strand::Antisense) {
+				end_iterator = std::begin(same_chromosome_records);
+			}
+			else {
+				return {};
+			}
 
 			auto Comparator = [](const auto& gff_record, const auto& start_pos) {
 				return (gff_record.start_pos < start_pos);
 			};
 			auto start_looking_from = std::lower_bound(std::begin(same_chromosome_records), std::end(same_chromosome_records), starting_record.start_pos, Comparator);
+			const auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
 
-			for (auto it = start_looking_from; it != std::end(same_chromosome_records); ++it) {
+
+
+			std::vector<bioscripts::gff::Record> final_records;
+			final_records.push_back(starting_record);
+
+			//Find the first record with a starting position larger than the current starting_record.
+			for (auto it = start_looking_from; it != end_iterator;) {
 				const auto& record = *it;
 				if (record.start_pos <= starting_record.start_pos) {
 					continue;
 				}
 
-				auto record_transcript_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
-				auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
+				const auto record_transcript_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
 				if (record_transcript_id.gene() != starting_record_id.gene()) {
-					std::cout << "Record transcript does not match starting record\n";
-					continue;
+					//std::cout << "Record transcript does not match starting record\n";
+					break;
 				}
 				//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
 				final_records.push_back(record);
-			}
 
+				if (starting_record.strand == bioscripts::Strand::Sense) {
+					++it;
+				}
+				else if (starting_record.strand == bioscripts::Strand::Antisense) {
+					--it;
+				}
+			}
 			return final_records;
 		}
 

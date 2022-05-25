@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 	for (const auto& peak : peaks)
 	{
 		auto midpoint = bioscripts::peak::midpoint(peak);
-		LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
+		//LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
 
 		auto records_under_the_peak = gff_records.getRecordsAt(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 		};
 		
 		std::erase_if(records_under_the_peak, recordIdentifierDoesNotMatchPeakIdentifier);
-		LOG(DEBUG) << records_under_the_peak.size() << " GFF records found under the peak";
+		//LOG(DEBUG) << records_under_the_peak.size() << " GFF records found under the peak";
 
 		//If there are no records underneath the peak midpoint, find the closest record instead
 
@@ -97,9 +97,9 @@ int main(int argc, char* argv[])
 			if (closest_record == nullptr) {
 				continue;
 			}
-			LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
+			//LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
 			auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(*closest_record, gff_records);
-			LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
+			//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 			for (const auto& rec : all_cds_records) {
 				LOG(DEBUG) << "Record attribute: " << rec.attributes;
 				data_to_write.push_back(TranscriptData{
@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 		else {
 			for (auto& record : records_under_the_peak) {
 				auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(record, gff_records);
-				LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
+				//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 				for (const auto& rec : all_cds_records) {
 					LOG(DEBUG) << "Record attribute: " << rec.attributes;
 
