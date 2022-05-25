@@ -77,7 +77,9 @@ int main(int argc, char* argv[])
 	const auto total_nr_of_peaks = peaks.size();
 	for (const auto& peak : peaks)
 	{
-		LOG(DEBUG) << "Analysing peak " << peak_id << "\\" << total_nr_of_peaks;
+		if (peak_id % 1000 == 0) {
+			LOG(DEBUG) << "Analysing peak " << peak_id << "\\" << total_nr_of_peaks;
+		}
 
 		auto midpoint = bioscripts::peak::midpoint(peak);
 		//LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
@@ -96,9 +98,10 @@ int main(int argc, char* argv[])
 
 		if (records_under_the_peak.empty()) {
 			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.associated_identifier, bioscripts::gff::Record::Type::CDS);
-			if (closest_record == nullptr) {
-				continue;
-			}
+
+			auto iter = bioscripts::gff::
+
+
 			//LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
 			auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(*closest_record, gff_records);
 			//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";

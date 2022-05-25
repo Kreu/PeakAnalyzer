@@ -114,7 +114,6 @@ namespace bioscripts
 				}
 
 				const auto& sequence_id = tokens[0];
-				//const auto& source = tokens[1];
 
 				const auto type = deduceType(tokens[2]);
 				if (type == bioscripts::gff::Record::Type::Unknown) {
@@ -128,27 +127,10 @@ namespace bioscripts
 				//but GFF coordinates are [start, end]
 				auto record_span = Range{ start_pos, end_pos + 1};
 
-
-				//std::optional<double> score;
-				//if (auto score_string = tokens[5]; score_string == ".") {
-				//	score = std::nullopt;
-				//}
-				//else {
-				//	score = std::stod(score_string);
-				//}
-
 				const auto strand = deduceStrand(tokens[6]);
 				if (strand == bioscripts::Strand::Unknown) {
 					continue;
 				}
-
-				//std::optional<uint8_t> phase;
-				//if (auto phase_string = tokens[7]; phase_string == ".") {
-				//	phase = std::nullopt;
-				//}
-				//else {
-				//	phase = std::stod(phase_string);
-				//}
 
 				const auto& attributes = tokens[8];
 
@@ -156,12 +138,7 @@ namespace bioscripts
 					.type = type,
 					.strand = strand,
 					.span = record_span,
-					//.start_pos = start_pos,
-					//.end_pos = end_pos,
-					//.phase = phase,
-					//.score = score,
 					.sequence_id = sequence_id,
-					//.source = source,
 					.attributes = attributes
 					});
 			}
@@ -209,7 +186,7 @@ namespace bioscripts
 			return record.attributes.substr(attribute_value_start_pos, substring_length);
 		}
 
-		Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& peak_gene_id, Record::Type type)
+		Records::pointer Records::findClosestRecord(std::size_t genomic_position, const Identifier<Full>& sequence_id, const Identifier<Gene>& peak_gene_id, const Record::Type type)
 		{
 			/* Closest record is defined as follows :
 				a) Record whose end position is closest to the genomic_position if that end position < genomic_position OR
@@ -329,11 +306,39 @@ namespace bioscripts
 			return records;
 		}
 
+
+
+		//TODO: Template this so it can accept both forward and reverse iterators
+		std::vector<bioscripts::gff::Record> findSubsequentRecords(const std::vector<Record>::iterator start, const std::vector<Record>::iterator end, const bioscripts::gff::Record::Type type)
+		{
+			auto starting_record = *start;
+			auto starting_record_transcript_id = bioscripts::gff::extractAttribute(starting_record, "ID=CDS");
+
+			std::vector<bioscripts::gff::Record> found_cds_records{ starting_record };
+			for (auto it = start; it != end; ++it) {
+				const auto& current_record = *it;
+				if (current_record.type != type) {
+					continue;
+				}
+
+				auto current_record_transcript_id = bioscripts::Identifier<Transcript>{ bioscripts::gff::extractAttribute(current_record, "ID=CDS")};
+				if (current_record_transcript_id != starting_record_transcript_id) {
+					//We can break here because once we find a different transcript ID, there is no
+					//chance that the starting_record_transcript_id can appear again.
+					break;
+				}
+
+				found_cds_records.push_back(current_record);
+			}
+
+			return found_cds_records;
+		}
+
 		/**
 		 * @brief  Find all CDS type GFF records that belong to the same transcript as @a starting_record. Only records
 		 *		   after the @a starting_record are considered.
 		 *
-		 * @return  All CDS GFF records corresponding to the same transcript ID of the @starting_record, including the @a starting_record. 
+		 * @return  All CDS GFF records corresponding to the same transcript ID of the @starting_record, including the @a starting_record.
 		 */
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
 		{
