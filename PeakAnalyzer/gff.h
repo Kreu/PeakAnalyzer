@@ -10,6 +10,7 @@
 
 #include "identifier.h"
 #include "peak.h"
+#include "range.h"
 
 namespace bioscripts
 {
@@ -41,16 +42,28 @@ namespace bioscripts
 
 			Type type;
 			Strand strand;
-			Position start_pos;
-			Position end_pos;
-			std::optional<uint8_t> phase;
-			std::optional<double> score;
+			Range span;
+			//Position start_pos;
+			//Position end_pos;
+			//std::optional<uint8_t> phase;
+			//std::optional<double> score;
 
 			Identifier<Full> sequence_id;
-			Database source;
+			//Database source;
 			std::string attributes;
 
 			auto operator<=>(const Record& rhs) const = default;
+
+			Position start() const
+			{
+				return span.start;
+			}
+
+			Position end() const
+			{
+				return span.end;
+			}
+
 		};
 
 		std::string extractAttribute(const Record& record, const std::string& attribute_name);

@@ -29,6 +29,11 @@ namespace bioscripts
                 std::string sequence_identifier = tokens[1];
                 std::size_t start_pos = std::stoull(tokens[2]);
                 std::size_t end_pos = std::stoull(tokens[3]);
+
+                //Add one to end-pos because Range is 0-based [start, end)
+                //but GFF coordinates are [start, end]
+                auto peak_range = Range{ start_pos, end_pos + 1 };
+
                 //uint16_t width = std::stoul(tokens[4]);
                 //uint16_t score = std::stoul(tokens[6]);
                 //double pvalue = std::stod(tokens[8]);
@@ -41,8 +46,9 @@ namespace bioscripts
                 auto strand = bioscripts::deduceStrand(tokens[14]);
 
                 peaks.push_back(Peak{
-                    .start_pos = start_pos,
-                    .end_pos = end_pos,
+                    .span = peak_range,
+                    //.start_pos = start_pos,
+                    //.end_pos = end_pos,
                     //.width = width,
                     //.score = score,
                     //.pvalue = pvalue,
@@ -67,7 +73,7 @@ namespace bioscripts
 
         double midpoint(const Peak& peak)
         {
-            return (peak.start_pos + peak.end_pos) / 2.0;
+            return (peak.start() + peak.end()) / 2.0;
         }
 
         Peaks::iterator Peaks::begin()

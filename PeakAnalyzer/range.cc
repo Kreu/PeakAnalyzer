@@ -11,9 +11,13 @@ namespace bioscripts
 		return std::max(r1.start, r2.start) < std::min(r1.end, r2.end);
 	}
 
-	bool overlap(const Point& p, const Range& r)
+	bool overlap(const Position& p, const Range& r)
 	{
 		return r.start >= p && r.end < p;
 	}
 
+	Position centre(const Range& r)
+	{
+		return std::llround((r.start + r.end) / 2.0);
+	}
 }

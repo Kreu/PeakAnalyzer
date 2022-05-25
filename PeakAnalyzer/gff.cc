@@ -77,11 +77,11 @@ namespace {
 	std::size_t distanceToRecord(const std::size_t genomic_position, const bioscripts::gff::Record& record)
 	{
 		std::size_t distance_to_record = 0;
-		if (record.end_pos < genomic_position) {
-			distance_to_record = genomic_position - record.end_pos;
+		if (record.end() < genomic_position) {
+			distance_to_record = genomic_position - record.end();
 		}
-		else if (record.start_pos > genomic_position) {
-			distance_to_record = record.start_pos - genomic_position;
+		else if (record.start() > genomic_position) {
+			distance_to_record = record.start() - genomic_position;
 		}
 		return distance_to_record;
 	}
@@ -114,7 +114,7 @@ namespace bioscripts
 				}
 
 				const auto& sequence_id = tokens[0];
-				const auto& source = tokens[1];
+				//const auto& source = tokens[1];
 
 				const auto type = deduceType(tokens[2]);
 				if (type == bioscripts::gff::Record::Type::Unknown) {
@@ -124,45 +124,51 @@ namespace bioscripts
 				std::size_t start_pos = std::stoull(tokens[3]);
 				std::size_t end_pos = std::stoull(tokens[4]);
 
-				std::optional<double> score;
-				if (auto score_string = tokens[5]; score_string == ".") {
-					score = std::nullopt;
-				}
-				else {
-					score = std::stod(score_string);
-				}
+				//Add one to end-pos because Range is 0-based [start, end)
+				//but GFF coordinates are [start, end]
+				auto record_span = Range{ start_pos, end_pos + 1};
+
+
+				//std::optional<double> score;
+				//if (auto score_string = tokens[5]; score_string == ".") {
+				//	score = std::nullopt;
+				//}
+				//else {
+				//	score = std::stod(score_string);
+				//}
 
 				const auto strand = deduceStrand(tokens[6]);
 				if (strand == bioscripts::Strand::Unknown) {
 					continue;
 				}
 
-				std::optional<uint8_t> phase;
-				if (auto phase_string = tokens[7]; phase_string == ".") {
-					phase = std::nullopt;
-				}
-				else {
-					phase = std::stod(phase_string);
-				}
+				//std::optional<uint8_t> phase;
+				//if (auto phase_string = tokens[7]; phase_string == ".") {
+				//	phase = std::nullopt;
+				//}
+				//else {
+				//	phase = std::stod(phase_string);
+				//}
 
 				const auto& attributes = tokens[8];
 
 				this->records[sequence_id].push_back(Record{
 					.type = type,
 					.strand = strand,
-					.start_pos = start_pos,
-					.end_pos = end_pos,
-					.phase = phase,
-					.score = score,
+					.span = record_span,
+					//.start_pos = start_pos,
+					//.end_pos = end_pos,
+					//.phase = phase,
+					//.score = score,
 					.sequence_id = sequence_id,
-					.source = source,
+					//.source = source,
 					.attributes = attributes
 					});
 			}
 
 			auto Comparator = [](const auto& first, const auto& second) {
 				return (first.sequence_id.to_string() < second.sequence_id.to_string())
-					&& (first.start_pos < second.start_pos);
+					&& (first.start() < second.start());
 			};
 
 			for (auto& [chromosome_id, entries] : records) {
@@ -242,7 +248,7 @@ namespace bioscripts
 
 			std::vector<Record> results;
 			for (const auto& record : records[sequence_id.to_string()]) {
-				if (record.start_pos <= genomic_position && record.end_pos >= genomic_position) {
+				if (record.start() <= genomic_position && record.end() >= genomic_position) {
 					//LOG(DEBUG) << "Found a record, attributes are " << record.attributes << "\n";
 					results.push_back(record);
 				}
@@ -355,9 +361,9 @@ namespace bioscripts
 			}
 
 			auto Comparator = [](const auto& gff_record, const auto& start_pos) {
-				return (gff_record.start_pos < start_pos);
+				return (gff_record.start() < start_pos);
 			};
-			auto start_looking_from = std::lower_bound(std::begin(same_chromosome_records), std::end(same_chromosome_records), starting_record.start_pos, Comparator);
+			auto start_looking_from = std::lower_bound(std::begin(same_chromosome_records), std::end(same_chromosome_records), starting_record.start(), Comparator);
 			const auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
 
 
@@ -368,7 +374,7 @@ namespace bioscripts
 			//Find the first record with a starting position larger than the current starting_record.
 			for (auto it = start_looking_from; it != end_iterator;) {
 				const auto& record = *it;
-				if (record.start_pos <= starting_record.start_pos) {
+				if (record.start() <= starting_record.start()) {
 					continue;
 				}
 

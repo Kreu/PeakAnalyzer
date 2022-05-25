@@ -104,8 +104,8 @@ int main(int argc, char* argv[])
 				LOG(DEBUG) << "Record attribute: " << rec.attributes;
 				data_to_write.push_back(TranscriptData{
 					.id = peak_id,
-					.start_pos = rec.start_pos,
-					.end_pos = rec.end_pos,
+					.start_pos = rec.start(),
+					.end_pos = rec.end(),
 					.transcript_id = bioscripts::gff::extractAttribute(rec, "ID=CDS")
 					});
 			}
@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
 
 					data_to_write.push_back(TranscriptData{
 						.id = peak_id,
-						.start_pos = rec.start_pos,
-						.end_pos = rec.end_pos,
+						.start_pos = rec.start(),
+						.end_pos = rec.end(),
 						.transcript_id = bioscripts::gff::extractAttribute(rec, "ID=CDS")
 						});
 				}

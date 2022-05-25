@@ -7,6 +7,7 @@
 
 #include "identifier.h"
 #include "strand.h"
+#include "range.h"
 
 namespace bioscripts
 {
@@ -23,14 +24,25 @@ namespace bioscripts
 
 		struct Peak
 		{
-			std::size_t start_pos;
-			std::size_t end_pos;
-			uint16_t width;
-			uint16_t score;
-			double pvalue;
-			double qvalue;
+			Range span;
+			//std::size_t start_pos;
+			//std::size_t end_pos;
+			//uint16_t width;
+			//uint16_t score;
+			//double pvalue;
+			//double qvalue;
 			std::string sequence_id; //Denotes the ID of the sequence the peak is found on. Usually it is the chromosome identifier.
 			Feature feature;
+
+			Position start() const
+			{
+				return span.start;
+			}
+
+			Position end() const
+			{
+				return span.end;
+			}
 		};
 
 		class Peaks
