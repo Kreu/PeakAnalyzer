@@ -3,6 +3,8 @@
 #include "helpers.h"
 #include "peak.h"
 
+#include "easylogging++.h"
+
 namespace bioscripts
 {
 	namespace peak
@@ -11,12 +13,15 @@ namespace bioscripts
 		{
             std::ifstream f{ peak_file };
             if (!f.is_open()) {
+                LOG(ERROR) << "Could not open peak file";
                 return;
             }
 
             std::string line;
             std::getline(f, line); /* Skips the header in database file */
             while (std::getline(f, line)) {
+                LOG(DEBUG) << "Parising " << line;
+
                 const auto tokens = helper::tokenise(line, '\t');
 
                 if (tokens.size() != 21) {

@@ -332,7 +332,7 @@ namespace bioscripts
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
 		{
 			auto record_sequence = starting_record.sequence_id.to_string();
-			//LOG(DEBUG) << "Collecting all CDS records of " << record_sequence << "\n";
+			LOG(DEBUG) << "Collecting all CDS records of " << record_sequence << "\n";
 			auto hasWrongSequenceType = [&starting_record](const auto& record)
 			{
 				return starting_record.type != record.type;
@@ -357,9 +357,10 @@ namespace bioscripts
 					continue;
 				}
 
-				auto record_gene_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
+				auto record_transcript_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
 				auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
-				if (record_gene_id != starting_record_id) {
+				if (record_transcript_id.gene() != starting_record_id.gene()) {
+					std::cout << "Record transcript does not match starting record\n";
 					continue;
 				}
 				//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";

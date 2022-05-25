@@ -66,12 +66,13 @@ int main(int argc, char* argv[])
 	//We are only interested in CDS records because we want to reconsitute the protein-coding parts and nothing else
 	auto cds_gff_records = bioscripts::gff::fetchRecords(gff_records, bioscripts::gff::Record::Type::CDS);
 
+	LOG(INFO) << "Parsing peak file";
 	auto peaks_file = argv[1];
 	auto peaks = bioscripts::peak::Peaks{ peaks_file };
 
 
 	std::vector<TranscriptData> data_to_write;
-	LOG(INFO) << "Analysing peaks\n";
+	LOG(INFO) << "Analysing peaks";
 	std::size_t peak_id = 0;
 	for (const auto& peak : peaks)
 	{
