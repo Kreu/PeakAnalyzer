@@ -349,16 +349,16 @@ namespace bioscripts
 
 			//If the record is on the sense strand, the subsequent CDS records are upstream of the starting record.
 			//If the record is on the antisense strand, the subsequent CDS records are before.
-			std::vector<bioscripts::gff::Record>::iterator end_iterator;
-			if (starting_record.strand == bioscripts::Strand::Sense) {
-				end_iterator = std::end(same_chromosome_records);
-			}
-			else if (starting_record.strand == bioscripts::Strand::Antisense) {
-				end_iterator = std::begin(same_chromosome_records);
-			}
-			else {
-				return {};
-			}
+			//std::vector<bioscripts::gff::Record>::iterator end_iterator;
+			//if (starting_record.strand == bioscripts::Strand::Sense) {
+			//	end_iterator = std::end(same_chromosome_records);
+			//}
+			//else if (starting_record.strand == bioscripts::Strand::Antisense) {
+			//	end_iterator = std::begin(same_chromosome_records);
+			//}
+			//else {
+			//	return {};
+			//}
 
 			auto Comparator = [](const auto& gff_record, const auto& start_pos) {
 				return (gff_record.start() < start_pos);
@@ -372,7 +372,7 @@ namespace bioscripts
 			final_records.push_back(starting_record);
 
 			//Find the first record with a starting position larger than the current starting_record.
-			for (auto it = start_looking_from; it != end_iterator;) {
+			for (auto it = start_looking_from; it != std::end(same_chromosome_records); ++it) {
 				const auto& record = *it;
 				if (record.start() <= starting_record.start()) {
 					continue;
@@ -386,12 +386,12 @@ namespace bioscripts
 				//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
 				final_records.push_back(record);
 
-				if (starting_record.strand == bioscripts::Strand::Sense) {
-					++it;
-				}
-				else if (starting_record.strand == bioscripts::Strand::Antisense) {
-					--it;
-				}
+				//if (starting_record.strand == bioscripts::Strand::Sense) {
+				//	++it;
+				//}
+				//else if (starting_record.strand == bioscripts::Strand::Antisense) {
+				//	--it;
+				//}
 			}
 			return final_records;
 		}

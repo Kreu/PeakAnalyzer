@@ -74,8 +74,11 @@ int main(int argc, char* argv[])
 	std::vector<TranscriptData> data_to_write;
 	LOG(INFO) << "Analysing peaks";
 	std::size_t peak_id = 0;
+	const auto total_nr_of_peaks = peaks.size();
 	for (const auto& peak : peaks)
 	{
+		LOG(DEBUG) << "Analysing peak " << peak_id << "\\" << total_nr_of_peaks;
+
 		auto midpoint = bioscripts::peak::midpoint(peak);
 		//LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
 
@@ -100,7 +103,7 @@ int main(int argc, char* argv[])
 			auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(*closest_record, gff_records);
 			//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 			for (const auto& rec : all_cds_records) {
-				LOG(DEBUG) << "Record attribute: " << rec.attributes;
+				//LOG(DEBUG) << "Record attribute: " << rec.attributes;
 				data_to_write.push_back(TranscriptData{
 					.id = peak_id,
 					.start_pos = rec.start(),
@@ -114,7 +117,7 @@ int main(int argc, char* argv[])
 				auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(record, gff_records);
 				//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 				for (const auto& rec : all_cds_records) {
-					LOG(DEBUG) << "Record attribute: " << rec.attributes;
+					//LOG(DEBUG) << "Record attribute: " << rec.attributes;
 
 					data_to_write.push_back(TranscriptData{
 						.id = peak_id,
