@@ -248,7 +248,7 @@ namespace bioscripts
 
 			std::vector<Record> results;
 			for (const auto& record : records[sequence_id.to_string()]) {
-				if (record.start() <= genomic_position && record.end() >= genomic_position) {
+				if (overlap(genomic_position, record.span)) {
 					//LOG(DEBUG) << "Found a record, attributes are " << record.attributes << "\n";
 					results.push_back(record);
 				}

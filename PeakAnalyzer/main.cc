@@ -84,16 +84,15 @@ int main(int argc, char* argv[])
 		//Remove those whose identifier is different from the called peak identifier
 		auto recordIdentifierDoesNotMatchPeakIdentifier = [&peak](const auto& elem)
 		{
-			return peak.feature.identifier != bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(elem, "ID=CDS") };
+			return peak.associated_identifier != bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(elem, "ID=CDS") };
 		};
-		
 		std::erase_if(records_under_the_peak, recordIdentifierDoesNotMatchPeakIdentifier);
 		//LOG(DEBUG) << records_under_the_peak.size() << " GFF records found under the peak";
 
 		//If there are no records underneath the peak midpoint, find the closest record instead
 
 		if (records_under_the_peak.empty()) {
-			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.feature.identifier, bioscripts::gff::Record::Type::CDS);
+			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.associated_identifier, bioscripts::gff::Record::Type::CDS);
 			if (closest_record == nullptr) {
 				continue;
 			}

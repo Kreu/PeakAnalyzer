@@ -33,36 +33,16 @@ namespace bioscripts
                 //Add one to end-pos because Range is 0-based [start, end)
                 //but GFF coordinates are [start, end]
                 auto peak_range = Range{ start_pos, end_pos + 1 };
-
-                //uint16_t width = std::stoul(tokens[4]);
-                //uint16_t score = std::stoul(tokens[6]);
-                //double pvalue = std::stod(tokens[8]);
-                //double qvalue = std::stod(tokens[9]);
-
                 std::string feature_identifier = tokens[11];
-                //std::size_t feature_start_pos = std::stoull(tokens[12]);
-                //std::size_t feature_end_pos = std::stoull(tokens[13]);
-                //std::string feature_ensembl_id = tokens[19];
+
                 auto strand = bioscripts::deduceStrand(tokens[14]);
 
                 peaks.push_back(Peak{
                     .span = peak_range,
-                    //.start_pos = start_pos,
-                    //.end_pos = end_pos,
-                    //.width = width,
-                    //.score = score,
-                    //.pvalue = pvalue,
-                    //.qvalue = qvalue,
+                    .strand = strand,
+                    .associated_identifier = feature_identifier,
                     .sequence_id = sequence_identifier,
-                    .feature = Feature {
-                        //.start_pos = feature_start_pos,
-                        //.end_pos = feature_end_pos,
-                        .strand = strand,
-                        .identifier = feature_identifier,
-                        //.ensembl_id = "",
-                        }
-                    });
-
+                });
             }
 		}
 
@@ -71,9 +51,9 @@ namespace bioscripts
             return peaks.size();
         }
 
-        double midpoint(const Peak& peak)
+        double midpoint(const Peak& peak) 
         {
-            return (peak.start() + peak.end()) / 2.0;
+            return (centre(peak.span));
         }
 
         Peaks::iterator Peaks::begin()
