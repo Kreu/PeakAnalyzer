@@ -92,17 +92,17 @@ int main(int argc, char* argv[])
 			return peak.associated_identifier != bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(elem, "ID=CDS") };
 		};
 		std::erase_if(records_under_the_peak, recordIdentifierDoesNotMatchPeakIdentifier);
-		//LOG(DEBUG) << records_under_the_peak.size() << " GFF records found under the peak";
+		LOG(DEBUG) << records_under_the_peak.size() << " GFF records found under the peak";
 
 		//If there are no records underneath the peak midpoint, find the closest record instead
 
 		if (records_under_the_peak.empty()) {
 			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.associated_identifier, bioscripts::gff::Record::Type::CDS);
 
-			auto iter = bioscripts::gff::
+			//auto iter = bioscripts::gff::
 
 
-			//LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
+			LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
 			auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(*closest_record, gff_records);
 			//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
 			for (const auto& rec : all_cds_records) {

@@ -71,6 +71,7 @@ namespace bioscripts
 		class Records
 		{
 		public:
+			Records() = default;
 			Records(const std::filesystem::path& gff_records);
 
 			using iterator = std::unordered_map<std::string, std::vector<Record>>::iterator;
@@ -90,6 +91,8 @@ namespace bioscripts
 			std::vector<Record>& data(const Identifier<Full>& sequence_id);
 			const std::vector<Record>& data(const Identifier<Full>& sequence_id) const;
 			
+			void add(Record record);
+
 			/**
 			 * @brief  Find all GFF records that overlap the @a genomic position with the same @sequence id
 			 */

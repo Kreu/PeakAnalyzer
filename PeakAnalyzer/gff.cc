@@ -9,8 +9,6 @@
 #include "helpers.h"
 #include "gff.h"
 
-#include "easylogging++.h"
-
 namespace {
 	/**
 	 * @brief  Turn a string representation of a sequence type into an actual type.
@@ -93,10 +91,10 @@ namespace bioscripts
 	{
 		Records::Records(const std::filesystem::path& gff_records)
 		{
-			LOG(DEBUG) << "Parsing GFF records from " << gff_records.string();
+			//LOG(DEBUG) << "Parsing GFF records from " << gff_records.string();
 			std::ifstream f{ gff_records };
 			if (!f.is_open()) {
-				LOG(ERROR) << "Failed to open " << gff_records.string();
+				//LOG(ERROR) << "Failed to open " << gff_records.string();
 				return;
 			}
 
@@ -125,7 +123,7 @@ namespace bioscripts
 
 				//Add one to end-pos because Range is 0-based [start, end)
 				//but GFF coordinates are [start, end]
-				auto record_span = Range{ start_pos, end_pos + 1};
+				auto record_span = Range{ start_pos, end_pos + 1 };
 
 				const auto strand = deduceStrand(tokens[6]);
 				if (strand == bioscripts::Strand::Unknown) {
@@ -192,7 +190,7 @@ namespace bioscripts
 				a) Record whose end position is closest to the genomic_position if that end position < genomic_position OR
 				b) Record whose start position is closest to the genomic_position if that start position > genomic_position
 			 */
-			//LOG(DEBUG) << "Finding closest record to " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\", peak gene identifier is " << peak_gene_id.to_string() << "\n";
+			 //LOG(DEBUG) << "Finding closest record to " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\", peak gene identifier is " << peak_gene_id.to_string() << "\n";
 			std::int64_t current_smallest_distance = (std::numeric_limits<std::int64_t>::max)();
 			Records::pointer closest_record = nullptr;
 			for (auto& record : records[sequence_id.to_string()]) {
@@ -247,6 +245,11 @@ namespace bioscripts
 			}
 			//LOG(DEBUG) << "After removing records of incorrect type, there are " << results.size() << " underlying records\n";
 			return results;
+		}
+
+		void Records::add(Record record)
+		{
+			records[record.sequence_id.to_string()].push_back(record);
 		}
 
 		Records::iterator Records::begin()
@@ -388,6 +391,12 @@ namespace bioscripts
 					//std::cout << "Record transcript does not match starting record\n";
 					break;
 				}
+
+				//if (record_transcript_id != starting_record_id) {
+				//	//std::cout << "Record transcript does not match starting record\n";
+				//	continue;
+				//}
+
 				//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
 				final_records.push_back(record);
 

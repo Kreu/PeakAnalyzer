@@ -7,6 +7,8 @@
 namespace bioscripts
 {
 	using Position = std::size_t;
+	using Length = std::size_t;
+	using Distance = std::size_t;
 
 	/**
 	 * @brief  Represents a 0-based half-open range [start, end).
@@ -15,10 +17,18 @@ namespace bioscripts
 	 */
 	struct Range
 	{
+		////Creates an empty range.
+		//Range();
+
 		Range(std::size_t start, std::size_t end);
 		Position start;
 		Position end;
 	};
+
+	/**
+	 * @return  The length of the range.
+	 */
+	Length length(const Range& r);
 
 	/**
 	 * @brief  Determines whether two ranges overlap.
@@ -33,10 +43,16 @@ namespace bioscripts
 	bool overlap(const Position& p, const Range& r);
 
 	/**
-	 * @brief  Returns the centre position of the range
-	 * 
-	 * Return value will be rounded to the nearest integer.
+	 * @brief  Calculates the centre position of the range
+	 * @return  Position of the central point. Position will be rounded to the nearest integer.
 	 */
 	Position centre(const Range& r);
+
+	/**
+	 * @brief  Calculates the distance between two ranges.
+	 * 
+	 * Distance refers to the 
+	 */
+	Distance distance(const Range& r1, const Range& r2);
 }
 #endif // !BIOSCRIPTS_RANGE_H
