@@ -2,6 +2,12 @@
 
 namespace bioscripts
 {
+
+	bool operator==(const Identifier<Full>& lhs, const Identifier<Full>& rhs)
+	{
+		return lhs.to_string() == rhs.to_string();
+	}
+
 	bool operator==(const Identifier<Gene>& lhs, const Identifier<Transcript>& rhs)
 	{
 		return lhs.gene() == rhs.gene();

@@ -23,6 +23,7 @@ namespace bioscripts
 		Range(std::size_t start, std::size_t end);
 		Position start;
 		Position end;
+		auto operator<=>(const Range& rhs) const = default;
 	};
 
 	/**
@@ -50,9 +51,12 @@ namespace bioscripts
 
 	/**
 	 * @brief  Calculates the distance between two ranges.
-	 * 
-	 * Distance refers to the 
+	 * @return  Distance between the two ranges. If the ranges overlap, returns 0.
 	 */
 	Distance distance(const Range& r1, const Range& r2);
+
+	Distance distance(const Position& p, const Range& r);
+
+
 }
 #endif // !BIOSCRIPTS_RANGE_H

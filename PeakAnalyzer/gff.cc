@@ -8,6 +8,7 @@
 #include "identifier.h"
 #include "helpers.h"
 #include "gff.h"
+#include "range.h"
 
 namespace {
 	/**
@@ -65,24 +66,24 @@ namespace {
 		}
 	}
 
-	/**
-	 * @brief  Calculate the absolute distance between record and @a genomic_position
-	 * 
-	 * The distance is calculated from the end of the record to the genomic position if the
-	 * record appears before the @a genomic_position; otherwise the distance is calculated
-	 * to the genomic position until the start position of the record.
-	 */
-	std::size_t distanceToRecord(const std::size_t genomic_position, const bioscripts::gff::Record& record)
-	{
-		std::size_t distance_to_record = 0;
-		if (record.end() < genomic_position) {
-			distance_to_record = genomic_position - record.end();
-		}
-		else if (record.start() > genomic_position) {
-			distance_to_record = record.start() - genomic_position;
-		}
-		return distance_to_record;
-	}
+	///**
+	// * @brief  Calculate the absolute distance between record and @a genomic_position
+	// * 
+	// * The distance is calculated from the end of the record to the genomic position if the
+	// * record appears before the @a genomic_position; otherwise the distance is calculated
+	// * to the genomic position until the start position of the record.
+	// */
+	//std::size_t distanceToRecord(const std::size_t genomic_position, const bioscripts::gff::Record& record)
+	//{
+	//	std::size_t distance_to_record = 0;
+	//	if (record.end() < genomic_position) {
+	//		distance_to_record = genomic_position - record.end();
+	//	}
+	//	else if (record.start() > genomic_position) {
+	//		distance_to_record = record.start() - genomic_position;
+	//	}
+	//	return distance_to_record;
+	//}
 }
 
 namespace bioscripts
@@ -203,7 +204,7 @@ namespace bioscripts
 					continue;
 				}
 
-				auto distance_to_record = distanceToRecord(genomic_position, record);
+				auto distance_to_record = bioscripts::distance(genomic_position, record.span);
 				//LOG(DEBUG) << "Calculated distance to record: " << distance_to_record << "\n";
 				if (distance_to_record < current_smallest_distance) {
 					current_smallest_distance = distance_to_record;
@@ -311,31 +312,31 @@ namespace bioscripts
 
 
 
-		//TODO: Template this so it can accept both forward and reverse iterators
-		std::vector<bioscripts::gff::Record> findSubsequentRecords(const std::vector<Record>::iterator start, const std::vector<Record>::iterator end, const bioscripts::gff::Record::Type type)
-		{
-			auto starting_record = *start;
-			auto starting_record_transcript_id = bioscripts::gff::extractAttribute(starting_record, "ID=CDS");
+		////TODO: Template this so it can accept both forward and reverse iterators
+		//std::vector<bioscripts::gff::Record> findSubsequentRecords(const std::vector<Record>::iterator start, const std::vector<Record>::iterator end, const bioscripts::gff::Record::Type type)
+		//{
+		//	auto starting_record = *start;
+		//	auto starting_record_transcript_id = bioscripts::gff::extractAttribute(starting_record, "ID=CDS");
 
-			std::vector<bioscripts::gff::Record> found_cds_records{ starting_record };
-			for (auto it = start; it != end; ++it) {
-				const auto& current_record = *it;
-				if (current_record.type != type) {
-					continue;
-				}
+		//	std::vector<bioscripts::gff::Record> found_cds_records{ starting_record };
+		//	for (auto it = start; it != end; ++it) {
+		//		const auto& current_record = *it;
+		//		if (current_record.type != type) {
+		//			continue;
+		//		}
 
-				auto current_record_transcript_id = bioscripts::Identifier<Transcript>{ bioscripts::gff::extractAttribute(current_record, "ID=CDS")};
-				if (current_record_transcript_id != starting_record_transcript_id) {
-					//We can break here because once we find a different transcript ID, there is no
-					//chance that the starting_record_transcript_id can appear again.
-					break;
-				}
+		//		auto current_record_transcript_id = bioscripts::Identifier<Transcript>{ bioscripts::gff::extractAttribute(current_record, "ID=CDS")};
+		//		if (current_record_transcript_id != starting_record_transcript_id) {
+		//			//We can break here because once we find a different transcript ID, there is no
+		//			//chance that the starting_record_transcript_id can appear again.
+		//			break;
+		//		}
 
-				found_cds_records.push_back(current_record);
-			}
+		//		found_cds_records.push_back(current_record);
+		//	}
 
-			return found_cds_records;
-		}
+		//	return found_cds_records;
+		//}
 
 		/**
 		 * @brief  Find all CDS type GFF records that belong to the same transcript as @a starting_record. Only records
@@ -352,9 +353,14 @@ namespace bioscripts
 				return starting_record.type != record.type;
 			};
 
+			auto isOnTheWrongStrand = [&starting_record](const auto& record)
+			{
+				return starting_record.strand != record.strand;
+			};
+
 			auto same_chromosome_records = records.data(record_sequence);
 			std::erase_if(same_chromosome_records, hasWrongSequenceType);
-
+			std::erase_if(same_chromosome_records, isOnTheWrongStrand);
 			//If the record is on the sense strand, the subsequent CDS records are upstream of the starting record.
 			//If the record is on the antisense strand, the subsequent CDS records are before.
 			//std::vector<bioscripts::gff::Record>::iterator end_iterator;
@@ -373,8 +379,6 @@ namespace bioscripts
 			};
 			auto start_looking_from = std::lower_bound(std::begin(same_chromosome_records), std::end(same_chromosome_records), starting_record.start(), Comparator);
 			const auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
-
-
 
 			std::vector<bioscripts::gff::Record> final_records;
 			final_records.push_back(starting_record);

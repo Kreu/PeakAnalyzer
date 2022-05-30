@@ -39,4 +39,22 @@ namespace bioscripts
 		return std::max(r1.start, r2.start) - std::min(r1.end, r2.end);
 	}
 
+	Distance distance(const Position& p, const Range& r)
+	{
+		if (overlap(p, r)) {
+			return 0;
+		}
+
+		std::size_t distance_to_record = 0;
+		if (r.end < p) {
+			//We add one because range is half-closed [start, end)
+			distance_to_record = p - r.end + 1;
+		}
+		else if (r.start > p) {
+			distance_to_record = r.start - p;
+		}
+		return distance_to_record;
+	}
+
+
 }

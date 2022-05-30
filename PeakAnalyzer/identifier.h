@@ -90,8 +90,9 @@ namespace bioscripts
 		std::string transcript_version;
 	};
 
-	bool operator==(const Identifier<Gene>& lhs, const Identifier<Transcript>& rhs);
+	bool operator==(const Identifier<Full>& lhs, const Identifier<Full>& rhs);
 
+	bool operator==(const Identifier<Gene>& lhs, const Identifier<Transcript>& rhs);
 	bool operator==(const Identifier<Transcript>& lhs, const Identifier<Gene>& rhs);
 
 	bool operator==(const Identifier<Gene>& lhs, const Identifier<Gene>& rhs);

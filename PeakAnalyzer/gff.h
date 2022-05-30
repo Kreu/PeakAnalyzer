@@ -53,6 +53,8 @@ namespace bioscripts
 			std::string attributes;
 
 			auto operator<=>(const Record& rhs) const = default;
+			bool operator==(const Record& rhs) const = default;
+
 
 			Position start() const
 			{

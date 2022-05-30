@@ -88,6 +88,21 @@ TEST(TestRange, distance_TwoRangesAreAdjacent_ReturnsZero)
 	EXPECT_EQ(bioscripts::distance(r1, r2), 0);
 }
 
+TEST(TestRange, distance_CalculateDistanceToPrecedingRecord_ReturnsDistanceToEndOfRecord)
+{
+	auto r2 = bioscripts::Range{ 0, 5 };
+	auto p = bioscripts::Position{ 10 };
+
+	EXPECT_EQ(distance(p, r2), 6);
+}
+
+TEST(TestRange, distance_CalculateDistanceToFollowingRecord_ReturnsDistanceToStartOfRecord)
+{
+	auto r2 = bioscripts::Range{ 20, 30 };
+	auto p = bioscripts::Position{ 10 };
+
+	EXPECT_EQ(distance(p, r2), 10);
+}
 
 
 //TEST(TestRange, length_ZeroLengthRange, ReturnsZero)
