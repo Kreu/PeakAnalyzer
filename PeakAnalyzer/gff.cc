@@ -383,35 +383,46 @@ namespace bioscripts
 			std::vector<bioscripts::gff::Record> final_records;
 			final_records.push_back(starting_record);
 
-			//Find the first record with a starting position larger than the current starting_record.
-			for (auto it = start_looking_from; it != std::end(same_chromosome_records); ++it) {
-				const auto& record = *it;
-				if (record.start() <= starting_record.start()) {
-					continue;
+			if (starting_record.strand == bioscripts::Strand::Sense) {
+				//Find the first record with a starting position larger than the current starting_record.
+				for (auto it = start_looking_from; it != std::end(same_chromosome_records); ++it) {
+					const auto& record = *it;
+					if (record.start() <= starting_record.start()) {
+						continue;
+					}
+					const auto record_transcript_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
+					if (record_transcript_id != starting_record_id) {
+						//std::cout << "Record transcript does not match starting record\n";
+						break;
+					}
+					//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
+					final_records.push_back(record);
 				}
-
-				const auto record_transcript_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
-				if (record_transcript_id.gene() != starting_record_id.gene()) {
-					//std::cout << "Record transcript does not match starting record\n";
-					break;
-				}
-
-				//if (record_transcript_id != starting_record_id) {
-				//	//std::cout << "Record transcript does not match starting record\n";
-				//	continue;
-				//}
-
-				//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
-				final_records.push_back(record);
-
-				//if (starting_record.strand == bioscripts::Strand::Sense) {
-				//	++it;
-				//}
-				//else if (starting_record.strand == bioscripts::Strand::Antisense) {
-				//	--it;
-				//}
+				return final_records;
 			}
-			return final_records;
+			else if (starting_record.strand == bioscripts::Strand::Antisense)
+			{
+				/* Make reverse iterator */
+				auto rev_iterator = std::make_reverse_iterator(start_looking_from);
+
+				for (auto it = rev_iterator; it != std::rend(same_chromosome_records); ++it) {
+					const auto& record = *it;
+					if (record.start() > starting_record.start()) {
+						continue;
+					}
+					const auto record_transcript_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(record, "ID=CDS") };
+					if (record_transcript_id != starting_record_id) {
+						//std::cout << "Record transcript does not match starting record\n";
+						break;
+					}
+					//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
+					final_records.push_back(record);
+				}
+				return final_records;
+			}
+
+
+
 		}
 
 	}
