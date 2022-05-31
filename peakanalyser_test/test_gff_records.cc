@@ -355,6 +355,13 @@ TEST_F(FindRecordTest, CollectCodingSequences_FindAllCodingSequencesOnAntiSenseS
 }
 
 
+
+TEST_F(FindRecordTest, CollectCodingSequence_OnlyOneCdsPerTranscript_ReturnOriginalRecord)
+{
+	//TODO
+}
+
+
 //
 //
 //TEST(findClosestRecordTest, FindClosestRecordBeforeCurrentRecord_ReturnRecordWithClosestEndPoint)

@@ -4,11 +4,14 @@
 
 
 #include <iostream>
+#include <algorithm>
 
 #include "identifier.h"
 #include "helpers.h"
 #include "gff.h"
 #include "range.h"
+
+#include "easylogging++.h"
 
 namespace {
 	/**
@@ -191,7 +194,7 @@ namespace bioscripts
 				a) Record whose end position is closest to the genomic_position if that end position < genomic_position OR
 				b) Record whose start position is closest to the genomic_position if that start position > genomic_position
 			 */
-			 //LOG(DEBUG) << "Finding closest record to " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\", peak gene identifier is " << peak_gene_id.to_string() << "\n";
+			 LOG(DEBUG) << "Finding closest record to " << genomic_position << " on sequence \"" << sequence_id.to_string() << "\", peak gene identifier is " << peak_gene_id.to_string();
 			std::int64_t current_smallest_distance = (std::numeric_limits<std::int64_t>::max)();
 			Records::pointer closest_record = nullptr;
 			for (auto& record : records[sequence_id.to_string()]) {
@@ -201,17 +204,19 @@ namespace bioscripts
 
 				auto record_id = Identifier<Transcript>{ extractAttribute(record, "ID=CDS") };
 				if (record_id != peak_gene_id) {
+					//LOG(DEBUG) << record_id.to_string() << " does not match " << peak_gene_id.to_string();
 					continue;
 				}
 
 				auto distance_to_record = bioscripts::distance(genomic_position, record.span);
-				//LOG(DEBUG) << "Calculated distance to record: " << distance_to_record << "\n";
+				//LOG(DEBUG) << "Calculated distance to record: " << distance_to_record;
 				if (distance_to_record < current_smallest_distance) {
 					current_smallest_distance = distance_to_record;
 					closest_record = &record;
-					//LOG(DEBUG) << "Found a closer record on sequence \"" << closest_record->sequence_id.to_string() << "\", record attributes are " << closest_record->attributes << "\n";
+					LOG(DEBUG) << "Found a closer record on sequence \"" << closest_record->sequence_id.to_string() << "\", record attributes are " << closest_record->attributes;
 				}
 			}
+			LOG(DEBUG) << "Returning closest record";
 			return closest_record;
 		}
 
@@ -347,7 +352,7 @@ namespace bioscripts
 		std::vector<bioscripts::gff::Record> collectCodingSequenceRecords(const bioscripts::gff::Record& starting_record, const bioscripts::gff::Records& records)
 		{
 			auto record_sequence = starting_record.sequence_id.to_string();
-			//LOG(DEBUG) << "Collecting all CDS records of " << record_sequence << "\n";
+
 			auto hasWrongSequenceType = [&starting_record](const auto& record)
 			{
 				return starting_record.type != record.type;
@@ -379,7 +384,7 @@ namespace bioscripts
 			};
 			auto start_looking_from = std::lower_bound(std::begin(same_chromosome_records), std::end(same_chromosome_records), starting_record.start(), Comparator);
 			const auto starting_record_id = bioscripts::Identifier<bioscripts::Transcript>{ bioscripts::gff::extractAttribute(starting_record, "ID=CDS") };
-
+			LOG(DEBUG) << "Collecting all CDS records of " << starting_record_id.to_string();
 			std::vector<bioscripts::gff::Record> final_records;
 			final_records.push_back(starting_record);
 
@@ -418,6 +423,9 @@ namespace bioscripts
 					//LOG(DEBUG) << "Found a record corresponding to the CDS with sequence id \"" << record.sequence_id.to_string() << "\" with attributes " << record.attributes << "\n";
 					final_records.push_back(record);
 				}
+				//Because the records should appear 5' to 3' direction and because these records
+				//are on the antisense (3' to 5') strand, they need to be reversed.
+				std::reverse(std::begin(final_records), std::end(final_records));
 				return final_records;
 			}
 

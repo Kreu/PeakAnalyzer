@@ -60,7 +60,6 @@ int main(int argc, char* argv[])
 	}
 
 	configureLogger(true);
-
 	auto gff_file = argv[2];
 	auto gff_records = bioscripts::gff::Records{ gff_file };
 	//We are only interested in CDS records because we want to reconsitute the protein-coding parts and nothing else
@@ -82,7 +81,7 @@ int main(int argc, char* argv[])
 		}
 
 		auto midpoint = bioscripts::peak::midpoint(peak);
-		//LOG(DEBUG) << "Analysing peak with gene ID: " << peak.feature.identifier.to_string() << ", midpoint at " << midpoint << "\n";
+		LOG(DEBUG) << "Analysing peak with gene ID: " << peak.associated_identifier.to_string() << ", midpoint at " << midpoint;
 
 		auto records_under_the_peak = gff_records.getRecordsAt(midpoint, peak.sequence_id, bioscripts::gff::Record::Type::CDS);
 
@@ -99,14 +98,16 @@ int main(int argc, char* argv[])
 		if (records_under_the_peak.empty()) {
 			auto closest_record = gff_records.findClosestRecord(midpoint, peak.sequence_id, peak.associated_identifier, bioscripts::gff::Record::Type::CDS);
 
-			//auto iter = bioscripts::gff::
-
-
+			if (closest_record == nullptr) {
+				continue;
+			}
 			LOG(DEBUG) << "Closest record to peak has attributes " << closest_record->attributes;
+
 			auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(*closest_record, gff_records);
-			//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
+			LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
+			LOG(DEBUG) << "Peak ID: " << peak_id;
 			for (const auto& rec : all_cds_records) {
-				//LOG(DEBUG) << "Record attribute: " << rec.attributes;
+				LOG(DEBUG) << "Record attribute: " << rec.attributes;
 				data_to_write.push_back(TranscriptData{
 					.id = peak_id,
 					.start_pos = rec.start(),
@@ -114,13 +115,15 @@ int main(int argc, char* argv[])
 					.transcript_id = bioscripts::gff::extractAttribute(rec, "ID=CDS")
 					});
 			}
+			++peak_id;
 		}
 		else {
 			for (auto& record : records_under_the_peak) {
 				auto all_cds_records = bioscripts::gff::collectCodingSequenceRecords(record, gff_records);
-				//LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
+				LOG(DEBUG) << "Writing all CDS records belonging to the same gene as peak";
+				LOG(DEBUG) << "Peak ID: " << peak_id;
 				for (const auto& rec : all_cds_records) {
-					//LOG(DEBUG) << "Record attribute: " << rec.attributes;
+					LOG(DEBUG) << "Record attribute: " << rec.attributes;
 
 					data_to_write.push_back(TranscriptData{
 						.id = peak_id,
@@ -129,9 +132,11 @@ int main(int argc, char* argv[])
 						.transcript_id = bioscripts::gff::extractAttribute(rec, "ID=CDS")
 						});
 				}
+				++peak_id;
 			}
 		}
-		++peak_id;
+		LOG(DEBUG) << "Increased peak identifier number by 1";
+
 	}
 	std::cout << "Data to write: " << data_to_write.size() << "\n";
 	writeOutputFile("transcript_data.txt", data_to_write);
